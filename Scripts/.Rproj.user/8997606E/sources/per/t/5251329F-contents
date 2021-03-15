@@ -1,9 +1,0 @@
-hgnc_list = as.character( mapIds(
-  org.Hs.eg.db,
-  keys=row.names(count_data),
-  column="SYMBOL",
-  keytype="ENSEMBL",
-  multiVals="first"
-) )
-
-hgnc_list_uni = as.character( unique(hgnc_list) )
