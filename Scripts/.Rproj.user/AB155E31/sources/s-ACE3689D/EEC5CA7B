@@ -1,0 +1,25 @@
+{
+    "id": "EEC5CA7B",
+    "path": "~/SeneSys/Scripts/Publication_plots.R",
+    "project_path": "Publication_plots.R",
+    "type": "r_source",
+    "hash": "0",
+    "contents": "",
+    "dirty": true,
+    "created": 1615575298576.0,
+    "source_on_save": false,
+    "relative_order": 5,
+    "properties": {
+        "cursorPosition": "19,0",
+        "scrollLine": "8",
+        "Source": "Source"
+    },
+    "folds": "",
+    "lastKnownWriteTime": 1615803427,
+    "encoding": "UTF-8",
+    "collab_server": "",
+    "source_window": "",
+    "last_content_update": 1615810498591,
+    "read_only": false,
+    "read_only_alternatives": []
+}

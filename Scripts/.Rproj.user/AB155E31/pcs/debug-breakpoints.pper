@@ -1,0 +1,21 @@
+{
+    "debugBreakpointsState": {
+        "breakpoints": [
+            {
+                "id": 7,
+                "path": "~/SeneSys/Scripts/SCDC_prop.R",
+                "line_number": 102,
+                "function_steps": "",
+                "function_name": "SCDC_prop_2",
+                "state": 2,
+                "editor_state": 2,
+                "editor_line_number": 102,
+                "is_pending_debug_completion": false,
+                "needs_updated_steps": true,
+                "type": 0,
+                "is_package_breakpoint": false,
+                "package_name": ""
+            }
+        ]
+    }
+}

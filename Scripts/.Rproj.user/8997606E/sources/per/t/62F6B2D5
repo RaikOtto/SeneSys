@@ -1,0 +1,22 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1578316955498.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "2930570464",
+    "id" : "62F6B2D5",
+    "lastKnownWriteTime" : 1575043372,
+    "last_content_update" : 1575043372,
+    "path" : "~/Deco/Scripts/Publication_plots.R",
+    "project_path" : null,
+    "properties" : {
+        "cursorPosition" : "72,0",
+        "scrollLine" : "0"
+    },
+    "relative_order" : 2,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_source"
+}

@@ -1,0 +1,22 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1578321167361.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "3755954808",
+    "id" : "5251329F",
+    "lastKnownWriteTime" : 1531754967,
+    "last_content_update" : 1531754967,
+    "path" : "~/MAPTor_NET/Scripts/Archive/Annotate.R",
+    "project_path" : null,
+    "properties" : {
+        "cursorPosition" : "5,19",
+        "scrollLine" : "0"
+    },
+    "relative_order" : 4,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_source"
+}

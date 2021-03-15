@@ -1,0 +1,23 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1578316931451.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "3896512780",
+    "id" : "C74BF49E",
+    "lastKnownWriteTime" : 1578322647,
+    "last_content_update" : 1578322647173,
+    "path" : "~/SeneSys/Scripts/Visualization.R",
+    "project_path" : "Visualization.R",
+    "properties" : {
+        "cursorPosition" : "64,0",
+        "scrollLine" : "36",
+        "tempName" : "Untitled1"
+    },
+    "relative_order" : 2,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_source"
+}

@@ -1,0 +1,3 @@
+48	3	1																																													
+#	Never_Relapsed	Relapse_Prone	Resistant																																												
+Never_Relapsed	Never_Relapsed	Never_Relapsed	Never_Relapsed	Never_Relapsed	Never_Relapsed	Never_Relapsed	Never_Relapsed	Never_Relapsed	Never_Relapsed	Never_Relapsed	Never_Relapsed	Never_Relapsed	Never_Relapsed	Never_Relapsed	Never_Relapsed	Relapse_Prone	Relapse_Prone	Relapse_Prone	Relapse_Prone	Relapse_Prone	Relapse_Prone	Relapse_Prone	Relapse_Prone	Relapse_Prone	Relapse_Prone	Relapse_Prone	Relapse_Prone	Relapse_Prone	Relapse_Prone	Relapse_Prone	Relapse_Prone	Resistant	Resistant	Resistant	Resistant	Resistant	Resistant	Resistant	Resistant	Resistant	Resistant	Resistant	Resistant	Resistant	Resistant	Resistant	Resistant
