@@ -25,13 +25,13 @@ meta_data = meta_info[colnames(expr_raw),]
 #meta_data$Cluster = as.factor(meta_data$Cluster)
 expr_raw[1:5,1:5]
 
-genes_of_interest_hgnc_t = read.table("~/SeneSys/Misc/SeneSys_gene_sets.gmt",sep ="\t", stringsAsFactors = F, header = F)
+#genes_of_interest_hgnc_t = read.table("~/SeneSys/Misc/SeneSys_gene_sets.gmt",sep ="\t", stringsAsFactors = F, header = F)
 #genes_of_interest_hgnc_t = read.table("~/SeneSys/Results/LM22_basis.tsv",sep ="\t", stringsAsFactors = F, header = T,fill = TRUE)
-#genes_of_interest_hgnc_t = read.table("~/SeneSys/Data/LM22_source_GEPs.tsv",sep ="\t", stringsAsFactors = F, header = T,fill = TRUE)
+genes_of_interest_hgnc_t = read.table("~/SeneSys/Results/Data_9461.Cell_fraction_predictions.bseq-sc.tsv",sep ="\t", stringsAsFactors = F, header = T,fill = TRUE)
 
 #genes_of_interest_hgnc_t[,1]
 
-for ( i in 1:nrow(genes_of_interest_hgnc_t)){
+#for ( i in 1:nrow(genes_of_interest_hgnc_t)){
     
     stem_path = "~/Downloads/Plots/"
     expr_raw = expr_raw[,colnames(expr_raw) != "GSM2601431"]
@@ -54,14 +54,14 @@ for ( i in 1:nrow(genes_of_interest_hgnc_t)){
     sad_genes
     
     expr = expr_raw[ rownames(expr_raw) %in% sad_genes,]
-    
+    expr = genes_of_interest_hgnc_t[,1:6]
     correlation_matrix = cor(expr)
     pca = prcomp(t(correlation_matrix))
     meta_data$RES_RP_NR = meta_data[,"ABC_GCB"]
     
-    pdf(pca_name)
+    #pdf(pca_name)
     p = ggbiplot::ggbiplot(
-        pca,
+        expr,
         choices = c(1,2),
         obs.scale = 1,
         groups = meta_data[,"RES_RP_NR"],
@@ -74,11 +74,12 @@ for ( i in 1:nrow(genes_of_interest_hgnc_t)){
     dev.off()
     genes_of_interest_hgnc_t[i,1]
     ## Figure 1
-}    
+#}    
     pheatmap::pheatmap(
-        correlation_matrix,
-        annotation_col = meta_data[c("ABC_GCB","NK","CD14")],
-        annotation_colors = aka3,
+        t(expr),
+        #correlation_matrix,
+        annotation_col = meta_data[c("ABC_GCB")],
+        #annotation_colors = aka3,
         show_rownames = F,
         show_colnames = T,
         treeheight_col = 0,

@@ -1,14 +1,11 @@
-library("SCDC")
+library("devtools")
+source("~/Deko_Projekt/CIBERSORT_package/CIBERSORT.R")
 library("stringr")
-library("reshape2")
-library("dplyr")
-library("Biobase")
+library("bseqsc")
 
 meta_info = read.table("~/SeneSys///Misc/Meta_information.tsv",sep = "\t",header = T,stringsAsFactors = F)
 rownames(meta_info) = meta_info$Name
 colnames(meta_info) = str_replace(colnames(meta_info),pattern = "\\.","_")
-meta_info$NEC_NET = meta_info$NEC_NET_PCA
-res_scdc = as.data.frame(meta_info)
 
 table(meta_info$ABC_GCB)
 
