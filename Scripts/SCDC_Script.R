@@ -9,8 +9,8 @@ colnames(meta_info) = str_replace(colnames(meta_info),pattern = "\\.","_")
 
 table(meta_info$ABC_GCB)
 
-expr_raw = read.table("~/SeneSys/Data/Data_9461.Counts.HGNC.tsv",sep="\t", stringsAsFactors =  F, header = T, row.names = 1,as.is = F)
-#expr_raw = read.table("~/SeneSys/Data/GSE98588.tsv",sep="\t", stringsAsFactors =  F, header = T, row.names = 1,as.is = F)
+#expr_raw = read.table("~/SeneSys/Data/Data_9461.Counts.HGNC.tsv",sep="\t", stringsAsFactors =  F, header = T, row.names = 1,as.is = F)
+expr_raw = read.table("~/SeneSys/Data/GSE98588.tsv",sep="\t", stringsAsFactors =  F, header = T, row.names = 1,as.is = F)
 expr_raw[1:5,1:5]
 colnames(expr_raw) = str_replace(colnames(expr_raw), pattern = "^X", "")
 fdata = rownames(expr_raw)
