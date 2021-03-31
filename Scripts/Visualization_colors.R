@@ -10,9 +10,7 @@ aka3 = list(
     ABC_GCB = c(ABC= "darkgreen", GCB = "darkred", Unclassified = "black"),
     Complex = c(clean = "white", complex = "orange", na = "gray"),
     Cluster = c("0" = "gray", "1" = "white", "2" = "green", "3" = "blue", "4" = "brown", "5" = "black"),
-    NK = c("high"= "black", "low" = "white" ),
-    B = c("high"= "yellow", "low" = "white" ),
-    NKT = c("high"= "cyan", "low" = "white" ),
-    CD4 = c("high"= "blue", "low" = "white" ),
-    CD14 = c("high"= "darkred", "low" = "white" )
+    Cluster_SUV = c("SUV_high" = "darkred", "SUV_low" = "white"),
+    Drup_response = c("Resistant"="black","Never Relapsed"="White","Relapse Prone" = "Yellow") 
+    
 )
