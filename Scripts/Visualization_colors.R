@@ -9,5 +9,8 @@ aka3 = list(
     Deco_type = c(alpha = "Blue",beta = "Yellow",gamma = "Orange",delta = "Purple", e13.5 = "Brown", hsc = "white"),
     ABC_GCB = c(ABC= "darkgreen", GCB = "darkred", Unclassified = "black"),
     Complex = c(clean = "white", complex = "orange", na = "gray"),
-    Cluster = c("0" = "gray", "1" = "white", "2" = "green", "3" = "blue", "4" = "brown", "5" = "black")
+    Cluster = c("0" = "gray", "1" = "white", "2" = "green", "3" = "blue", "4" = "brown", "5" = "black"),
+    Cluster_SUV = c("SUV_high" = "darkred", "SUV_low" = "white"),
+    Drup_response = c("Resistant"="black","Never Relapsed"="White","Relapse Prone" = "Yellow") 
+    
 )

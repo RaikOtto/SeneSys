@@ -37,8 +37,6 @@ for (i in 1:nrow(genes_of_interest_hgnc_t)){
     hgnc_genes = hgnc_genes[ hgnc_genes %in% rownames(expr_raw)]
     geneList [genes_of_interest_hgnc_t[i,1] ] = list(hgnc_genes)
 }
-
-
 ####
 
 ###
@@ -57,11 +55,6 @@ assign.wrapper(
     iter = 2000,
     burn_in = 1000
 )
-
-
-
-
-
 dir.create("tempdir")
 tempdir <- "tempdir"
 

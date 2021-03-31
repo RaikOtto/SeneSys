@@ -82,3 +82,20 @@ colnames(props) = colnames(scdc_props$prop.est.mvw)
 rownames(props)  = rownames(scdc_props$prop.est.mvw) 
 props = as.data.frame(props)
 #write.table(props,"~/SeneSys/Results/GSE98588.proportions.SCDC.tsv",sep = "\t")
+
+#####
+
+
+props = read.table("~/SeneSys/Results/GSE98588.proportions.SCDC.tsv",sep="\t", stringsAsFactors =  F, header = T, row.names = 1,as.is = F)
+pheatmap::pheatmap(
+    t(props),
+    #correlation_matrix,
+    #annotation_col = meta_data[c("ABC_GCB")],
+    #annotation_colors = aka3,
+    show_rownames = F,
+    show_colnames = F,
+    treeheight_col = 0,
+    legend = F,
+    fontsize_col = 7,
+    clustering_method = "average"
+)
