@@ -9,5 +9,10 @@ aka3 = list(
     Deco_type = c(alpha = "Blue",beta = "Yellow",gamma = "Orange",delta = "Purple", e13.5 = "Brown", hsc = "white"),
     ABC_GCB = c(ABC= "darkgreen", GCB = "darkred", Unclassified = "black"),
     Complex = c(clean = "white", complex = "orange", na = "gray"),
-    Cluster = c("0" = "gray", "1" = "white", "2" = "green", "3" = "blue", "4" = "brown", "5" = "black")
+    Cluster = c("0" = "gray", "1" = "white", "2" = "green", "3" = "blue", "4" = "brown", "5" = "black"),
+    NK = c("high"= "black", "low" = "white" ),
+    B = c("high"= "yellow", "low" = "white" ),
+    NKT = c("high"= "cyan", "low" = "white" ),
+    CD4 = c("high"= "blue", "low" = "white" ),
+    CD14 = c("high"= "darkred", "low" = "white" )
 )
