@@ -8,14 +8,23 @@ library(genefilter)
 library(limma)
 source("~/SeneSys/Scripts/Visualization_colors.R")
 
+#meta_info = read.table("~/MAPTor_NET//Misc/Meta_information.tsv",sep = "\t",header = T,stringsAsFactors = F)
 meta_info = read.table("~/SeneSys/Misc/Meta_information.tsv",sep = "\t",header = T,stringsAsFactors = F)
 meta_info = meta_info[meta_info$Sample!="",]
-rownames(meta_info) = meta_info$Sample
+meta_info = meta_info[!is.na(meta_info$Sample),]
 colnames(meta_info) = str_replace(colnames(meta_info),pattern = "\\.","_")
 
-expr_raw = read.table("~/SeneSys/Data/Reddy.tsv",sep ="\t", as.is = T,header = T, row.names = 1)
+#expr_raw = read.table("~/MAPTor_NET/BAMs/TPMs.57_Samples.Groetzinger_Scarpa.Non_normalized.HGNC.tsv",sep ="\t", as.is = T,header = T, row.names = 1, fill = T)
+expr_raw = read.table("~/SeneSys/Data/GSE136971.HGNC.tsv",sep ="\t", as.is = T,header = T, row.names = 1, fill = T)
 colnames(expr_raw) = str_replace(colnames(expr_raw), pattern = "^X", "")
 expr_raw[1:5,1:5]
+
+#meta_GSE11318 = meta_info[meta_info$Study == "GSE11318",]
+#rownames(meta_GSE11318) = meta_GSE11318$Sample
+#meta_data = meta_GSE11318[colnames(expr_raw),]
+
+meta_info = meta_info[meta_info$Study != "GSE11318",]
+rownames(meta_info) = meta_info$Sample
 meta_data = meta_info[colnames(expr_raw),]
 
 gmt_file = read.gmt("~/SeneSys/Misc/SeneSys_gene_sets.gmt")
@@ -25,11 +34,12 @@ summary(row_var)
 expr = expr_raw[row_var > median(row_var),]
 
 fe_es = gsva(as.matrix(expr), gmt_file, min.sz=10, max.sz=500, verbose=TRUE)
-#write.table(fe_es,"~/SeneSys/Results/Reddy.gsva.tsv",sep ="\t",quote = F,row.names = F)
-
+#write.table(fe_es,"~/SeneSys/Results/GSE136971.GSVA.tsv",sep ="\t",quote = F,row.names = T)
+#write.table(fe_es,"~/MAPTor_NET/Results/GSVAR_senesys_S57_not_normalized_hgnc.tsv",sep ="\t",quote = F,row.names = T)
 #####
 
-#fe_es = read.table("~/SeneSys/Results/GSVA_ES_bimodal.csv",sep ="\t", header = T,as.is = T,row.names = 1)
+fe_es = read.table("~/MAPTor_NET/Results/GSVAR_senesys_S57_not_normalized_hgnc.tsv",sep ="\t", header = T,as.is = T,row.names = 1)
+colnames(fe_es) = str_replace(colnames(fe_es),pattern = "^X","")
 fe_es[1:5,1:5]
 
 vis_mat = fe_es
@@ -41,16 +51,18 @@ vis_mat = vis_mat[,vis_mat_var]
 #vis_mat = vis_mat[,order(vis_mat["E2F target genes",])]
 #meta_data = meta_info[colnames(t),]
 #vis_mat = vis_mat[,order(meta_data[,"B"])]
-#meta_data$Drup_response = meta_data$ABC_GCB
+meta_data[colnames(vis_mat),"SUVARNESS"] = vis_mat["SUVARNESS",]
+meta_data["ABC_GCB"] = str_replace_all(meta_data[,"ABC_GCB"],pattern = " ", "")
 
 #pdf("~/Downloads/E2F_and_other_pathways_of_interest.pdf")
 pheatmap::pheatmap(
     #pca,
-    vis_mat,
-    #annotation_col = meta_data[,c("Drup_response","Drup_response")],
-    annotation_col = meta_data["ABC_GCB"],
+    cor(vis_mat),
+    annotation_col = meta_data[,c("SUVARNESS","NEC_NET_PCA","Grading")],
+    #annotation_col = meta_data["Grading"],
+    #annotation_col = meta_data["SUVARNESS"],
     annotation_colors = aka3,
-    show_rownames = T,
+    show_rownames = F,
     show_colnames = F,
     treeheight_col = 0,
     legend = F,
@@ -79,3 +91,14 @@ aggregate(num_vec, by = list(meta_data[,"ABC_GCB"]), FUN = mean)
 meta_info[colnames(vis_mat),"SUVARNESS"] = vis_mat["SUVARNESS",]
 
 #write.table(meta_info,"~/SeneSys/Misc/Meta_information.tsv",sep ="\t",quote = F,row.names = F)
+
+#meta_info[ match(colnames(fe_es), meta_info$Sample ),"FRIDMAN_SENESCENCE_UP"] = as.double(fe_es["FRIDMAN_SENESCENCE_UP",])
+#meta_info[ (meta_info$Study == "GSE11318") & (meta_info$Sample %in% colnames(vis_mat)), "SUVARNESS"] = vis_mat["SUVARNESS",]
+#write.table(meta_info,"~/MAPTor_NET//Misc/Meta_information.tsv",row.names = F,quote = F, sep= "\t")
+
+# SASP 2 4 6 7
+i = 9
+rownames(vis_mat)[i]
+hist(vis_mat[i,])
+
+meta_data[,rownames(vis_mat)[i]] = vis_mat[i,]

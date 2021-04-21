@@ -1,10 +1,15 @@
 ## hgnc
-library("org.Mm.eg.db")
-
+#library("org.Mm.eg.db")
+library("hgu133plus2.db")
+x <- hgu133plus2SYMBOL
+mapped_probes <- mappedkeys(x)
+xx <- as.data.frame(x[mapped_probes])
+rownames(xx) = xx$probe_id
+hgnc_list = as.character(xx[rownames(expr_raw),2])
 ### hgnc
 
 #expr_raw = bam_counts
-gene_ids = as.character(row.names(expr_raw))
+#gene_ids = as.character(row.names(expr_raw))
 
 hgnc_list = str_to_upper(as.character(  mapIds(
     org.Mm.eg.db,
@@ -77,4 +82,4 @@ which(sapply(expr_raw[,1], FUN = is.na))
 expr_raw = expr_raw[!(sapply(expr_raw[,1], FUN = is.na)),]
 dim(expr_raw)
 
-#write.table(expr_raw,"~/SeneSys/Data/Data_9461.Counts.DeSeq2.HGNC.tsv",sep="\t",quote =F)
+#write.table(expr_raw,"~/SeneSys/Data/GSE136971.HGNC.tsv",sep="\t",quote =F)
