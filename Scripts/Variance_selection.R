@@ -82,4 +82,46 @@ which(sapply(expr_raw[,1], FUN = is.na))
 expr_raw = expr_raw[!(sapply(expr_raw[,1], FUN = is.na)),]
 dim(expr_raw)
 
-#write.table(expr_raw,"~/SeneSys/Data/GSE136971.HGNC.tsv",sep="\t",quote =F)
+#write.table(expr_raw,"~/MAPTor_NET/BAMs_new/BON-1.illumina.tsv",sep="\t",quote =F)
+
+library(biomaRt)
+ensembl <- useEnsembl(biomart = "genes", dataset = "hsapiens_gene_ensembl")
+#listEnsembl()
+#datasets <- listDatasets(ensembl)
+head(datasets)
+searchDatasets(mart = ensembl, pattern = "hsapiens")
+ensembl <- useDataset(dataset = "hsapiens_gene_ensembl", mart = ensembl)
+ensembl <- useEnsembl(biomart = "genes", dataset = "hsapiens_gene_ensembl")
+
+ensembl <- useEnsembl(
+    biomart = "ensembl", 
+    dataset = "hsapiens_gene_ensembl", 
+    mirror = "useast")
+
+genes_of_interest_hgnc_t = read.table("~/SeneSys/Misc/SeneSys_gene_sets.tsv",sep ="\t", stringsAsFactors = F, header = F)
+converted_t = genes_of_interest_hgnc_t
+
+for (i  in 1:nrow(genes_of_interest_hgnc_t)){
+
+    print(i)    
+    query_input = genes_of_interest_hgnc_t[i,3:ncol(genes_of_interest_hgnc_t)]
+    query_input = query_input[query_input != ""]
+    query_input = unique(query_input)
+    conversion_result = getBM(attributes = c(
+        'hgnc_symbol',
+        'entrezgene_id'),
+        filters = 'hgnc_symbol', 
+        values = query_input, 
+        mart = ensembl)
+    
+    res_vec = conversion_result[,2]
+    res_vec = res_vec[!is.na(res_vec)]
+    length_res_vec = length(res_vec)
+    
+    converted_t[i,3:ncol(genes_of_interest_hgnc_t)] = rep("",ncol(genes_of_interest_hgnc_t)-2)
+    converted_t[i,3:(length_res_vec+2)] = as.character(res_vec)
+}
+
+converted_t[1:5,1:5]
+write.table(converted_t,"~/Downloads/Senescence_genesets_entrez_gene_id.tsv",sep ="\t",quote = F, row.names = F,col.names = F
+        )

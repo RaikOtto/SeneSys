@@ -14,19 +14,20 @@ mapping_t[1:5,]
 
 ### parsing GSE68895
 
-expr_raw = read.table("~/SeneSys/Data/GSE68895.tsv",sep ="\t", header = T,comment.char = '!',row.names = 1,stringsAsFactors = F)
+expr_raw = read.table("~/Downloads/GSE53778_non-normalized.tsv",sep ="\t", header = T,comment.char = '!',row.names = 1,stringsAsFactors = F)
 dim(expr_raw)
-expr_raw[1:5,1:5]
+expr_raw[1:5,1:3]
 
 library("biomaRt")
+ensembl = useMart("ensembl",dataset="hsapiens_gene_ensembl")
 affyids = rownames(expr_raw)
 
 datasets <- listDatasets(ensembl)
+listAttributes(ensembl)
 ensembl = useDataset("hsapiens_gene_ensembl",mart=ensembl)
-
-getBM(
-    attributes = c('affy_hg_u133_plus_2', 'hgnc_symbol'),
-    filters = 'affy_hg_u133_plus_2', 
+conversion_t = getBM(
+    attributes = c('illumina_humanht_12_v3', 'hgnc_symbol'),
+    filters = 'illumina_humanht_12_v3', 
     values = affyids, 
     mart = ensembl
 )
