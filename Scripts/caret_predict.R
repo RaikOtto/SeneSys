@@ -39,10 +39,10 @@ meta_data = meta_info[colnames(expr_raw),]
 
 row_var = apply(expr_raw, FUN = var, MARGIN = 1)
 quantiles = as.double(quantile(row_var,seq(0,1,0.01)))
-x = expr_raw[row_var > quantiles[100],]
+x = expr_raw[row_var > quantiles[96],]
 dim(x)
 
-y = meta_data$ABC_GCB
+y = as.factor(meta_data$ABC_GCB)
 x = t(x)
 
 preProcess_missingdata_model <- preProcess(x, method='knnImpute')
@@ -86,11 +86,35 @@ ctrl <- rfeControl(functions = rfFuncs,
 
 #lmProfile
 #regLogistic
+training_data = matrix(as.double(x), ncol = ncol(x), nrow=nrow(x))
+rownames(training_data) = rownames(x)
+colnames(training_data) = colnames(x)
 
-model_mars = train(as.factor(y) ~ ., data=trainData, method='regLogistic')
-fitted <- predict(model_mars)
+training_data = as.data.frame(training_data[,which(!(is.na(training_data[1,])))])
+
+training_data[1:5,1:5]
+dim(training_data)
+#training_data$y = factor(y)
+
+model_mars = train(factor(y) ~ ., data=training_data, method='regLogistic')
+gene_names = model_mars$finalModel$xNames
+gene_names = str_remove_all(gene_names, pattern = "`")
+fitted <- predict( model_mars$finalModel, newx = training_data)
 
 varimp_mars <- varImp(model_mars)
 plot(varimp_mars, main="Variable Importance with MARS")
 
-confusionMatrix(reference = testData$Purchase, data = predicted, mode='everything', positive='MM')
+confusionMatrix(reference = as.factor(y), data = fitted, mode='everything', positive='MM')
+
+# Define the training control
+# multiClassSummary
+fitControl <- trainControl(
+    method = 'cv',                   # k-fold cross validation
+    number = 5,                      # number of folds
+    savePredictions = 'final',       # saves predictions for optimal tuning parameter
+    classProbs = T,                  # should class probabilities be returned
+    summaryFunction=multiClassSummary  # results summary function
+) 
+
+#saveRDS(model_mars,"~/Downloads/mars_large.RDS")
+
