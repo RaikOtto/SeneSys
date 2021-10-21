@@ -33,56 +33,18 @@ colnames(meta_info) = str_replace(colnames(meta_info),pattern = "\\.","_")
 path_transcriptome_file = "~/SeneSys/Data/Data_9461.Counts.DeSeq2.HGNC.tsv"
 expr_raw = read.table(path_transcriptome_file,sep="\t", stringsAsFactors =  F, header = T, row.names = 1,as.is = F)
 colnames(expr_raw) = str_replace(colnames(expr_raw), pattern = "^X", "")
+allowed_genes = unique(read.table("~/SeneSys/Data/Allowed_genes.tsv",sep = "\t", header = F)[,1])
+expr_raw = expr_raw[rownames(expr_raw) %in% allowed_genes,]
 expr_raw[1:5,1:5]
+dim(expr_raw)
 
 meta_data = meta_info[colnames(expr_raw),]
 
 row_var = apply(expr_raw, FUN = var, MARGIN = 1)
 quantiles = as.double(quantile(row_var,seq(0,1,0.01)))
-x = expr_raw[row_var > quantiles[96],]
+x = expr_raw[row_var > quantiles[90],]
 dim(x)
-
-y = as.factor(meta_data$ABC_GCB)
 x = t(x)
-
-preProcess_missingdata_model <- preProcess(x, method='knnImpute')
-preProcess_missingdata_model
-
-trainData <- predict(preProcess_missingdata_model, newdata = x)
-
-preProcess_range_model <- preProcess(trainData, method='range')
-trainData <- predict(preProcess_range_model, newdata = trainData)
-
-# Append the Y variable
-
-apply(trainData[, 1:10], 2, FUN=function(x){c('min'=min(x), 'max'=max(x))})
-#trainData$Purchase = y
-
-featurePlot(
-    x = trainData[, 1:9], 
-    y = as.factor(y), 
-    plot = "box",
-    strip=strip.custom(par.strip.text=list(cex=.7)),
-    scales = list(
-        x = list(relation="free"), 
-        y = list(relation="free")
-    )
-)
-
-set.seed(100)
-options(warn=-1)
-
-subsets <- c(1:5, 10, 15, 18)
-
-ctrl <- rfeControl(functions = rfFuncs,
-                   method = "repeatedcv",
-                   repeats = 5,
-                   verbose = FALSE)
-
-#lmProfile <- rfe(
-#    x=trainData[, 1:18], y=as.factor(y),
-#    sizes = subsets,
-#    rfeControl = ctrl)
 
 #lmProfile
 #regLogistic
@@ -91,30 +53,56 @@ rownames(training_data) = rownames(x)
 colnames(training_data) = colnames(x)
 
 training_data = as.data.frame(training_data[,which(!(is.na(training_data[1,])))])
+#genes = c("RPL13","LGALS9","CALM1","CCT3","TUBB5","CD79A","RPS11","RPL8","PSAP","HDGF","HNRNPA2B1","EIF4G2","RPS9","CRIP1","CDK4","RPLP1","UBC","RPS18","RPL10","RPS15A","RPS25","RPL15","RPS5","HSPA8","ANP32E","SLC25A5","RPL19","SERINC3","PFN1","LSP1","UBB","MKNK2","CYFIP2","RACK1","RPS27A","DDX5","ATP2A3","PRPF8","TOP2A","HSP90AA1","SYK","HNRNPK","TKT","LCP1","CCT5","PABPC1","MYC","MYH9")
+#training_data = training_data[,colnames(training_data) %in% genes]
+
+y = as.character(meta_data$ABC_GCB)
+y = make.names(y)
+y[y %in% c("Relapse.Prone","Resistant")] = "RPR"
+training_data$outcome = as.factor(y)
+colnames(training_data) = make.names(str_remove_all(colnames(training_data),"`"))
 
 training_data[1:5,1:5]
 dim(training_data)
-#training_data$y = factor(y)
 
-model_mars = train(factor(y) ~ ., data=training_data, method='regLogistic')
-gene_names = model_mars$finalModel$xNames
-gene_names = str_remove_all(gene_names, pattern = "`")
-fitted <- predict( model_mars$finalModel, newx = training_data)
+#model_mars = train(y ~ ., data=training_data, method='regLogistic')
+#gene_names = model_mars$finalModel$xNames
+#gene_names = str_remove_all(gene_names, pattern = "`")
+#fitted <- predict( model_mars$finalModel, newx = training_data)
 
-varimp_mars <- varImp(model_mars)
-plot(varimp_mars, main="Variable Importance with MARS")
+#multiClassSummary
+trControl <- trainControl(
+    method = 'repeatedcv',
+    number = 10,
+    repeats =  3,
+    search = 'grid',
+    savePredictions = 'final',       
+    classProbs = T,                  
+    #summaryFunction=multiClassSummary,
+    allowParallel = TRUE)
 
-confusionMatrix(reference = as.factor(y), data = fitted, mode='everything', positive='MM')
+fit.LR = caret::train(
+    outcome~.,
+    data = training_data,
+    method="svmPoly",
+    metric= "Accuracy",
+    preProc=c("center", "scale"),
+    trControl=trControl
+)
+print(fit.LR)
+fit.LR$finalModel
 
-# Define the training control
-# multiClassSummary
-fitControl <- trainControl(
-    method = 'cv',                   # k-fold cross validation
-    number = 5,                      # number of folds
-    savePredictions = 'final',       # saves predictions for optimal tuning parameter
-    classProbs = T,                  # should class probabilities be returned
-    summaryFunction=multiClassSummary  # results summary function
-) 
+varimp_mars <- varImp(fit.LR)
+ordered_imp = data.frame(varimp_mars$importance)
+imp_genes = str_replace_all(rownames(ordered_imp)[order(ordered_imp$Overall,decreasing = T)],"`","")
+#write.table(imp_genes[1:50],"~/Downloads/imp_genes.tsv",sep ="\t", row.names = F, quote =F)
+plot(fit.LR, main="Variable Importance with MARS",top = 20)
 
-#saveRDS(model_mars,"~/Downloads/mars_large.RDS")
+fitted = as.character(predict(fit.LR, as.matrix(training_data[,colnames(training_data) != "outcome"])))
+confusionMatrix(reference = as.factor(y), data = as.factor(fitted), positive='Never.Relapsed')
+
+meta_data$Predicted = fitted
+
+saveRDS(fit.LR,"~/Downloads/svm_poly.RDS")
+
 

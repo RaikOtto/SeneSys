@@ -24,5 +24,7 @@ aka3 = list(
     NEC_NET = c(Healthy = "white",NEC= "red", NET = "blue", Ambiguous = "purple"),
     NEC_NET_PCA = c(NEC= "red", NET = "blue", Unknown = "white"),
     NEC_NET_Color = c(NEC= "red", NET = "blue", Ambiguous = "purple"),
-    Study = c(Riemer = "gray", Scarpa = "darkgreen")
+    Study = c(Riemer = "gray", Scarpa = "darkgreen"),
+    #Predicted = c("Never Relapsed" = "green", "Relapse Prone" = "yellow", "Resistant" = "red"),
+    Predicted = c("Never.Relapsed" = "green", "RPR" = "red")
 )

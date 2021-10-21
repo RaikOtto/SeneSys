@@ -32,7 +32,7 @@ summary(row_var)
 expr = expr_raw[row_var > median(row_var),]
 
 fe_es = gsva(as.matrix(expr), gmt_file, min.sz=10, max.sz=500, verbose=TRUE)
-#write.table(fe_es,"~/SeneSys/Results/Data_9461.DESeq2.GSVA.tsv",sep ="\t",quote = F,row.names = T)
+#write.table(fe_es,"~/SeneSys/Results/Schmitz.GSVA.tsv",sep ="\t",quote = F,row.names = T)
 
 #####
 

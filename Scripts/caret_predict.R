@@ -30,91 +30,41 @@ colnames(meta_info) = str_replace(colnames(meta_info),pattern = "\\.","_")
 
 ###
 
-path_transcriptome_file = "~/SeneSys/Data/Data_9461.Counts.DeSeq2.HGNC.tsv"
+model = readRDS("~/Downloads/rpar.RDS")
+model$finalModel$xNames = str_remove_all(model$finalModel$xNames, pattern = "`")
+#rownames(model$finalModel$beta) = str_remove_all(rownames(model$finalModel$beta), pattern = "`")
+#gene_names = rownames(model$finalModel$beta)
+#colnames(model$finalModel$W) = str_remove_all(colnames(model$finalModel$W), pattern = "`")
+#gene_names = model$finalModel$xNames
+#gene_names = str_remove_all(gene_names, pattern = "`")
+
+path_transcriptome_file = "~/SeneSys/Data/Schmitz.HGNC.DESeq2.tsv"
 expr_raw = read.table(path_transcriptome_file,sep="\t", stringsAsFactors =  F, header = T, row.names = 1,as.is = F)
 colnames(expr_raw) = str_replace(colnames(expr_raw), pattern = "^X", "")
-expr_raw[1:5,1:5]
 
 meta_data = meta_info[colnames(expr_raw),]
 
-row_var = apply(expr_raw, FUN = var, MARGIN = 1)
-quantiles = as.double(quantile(row_var,seq(0,1,0.01)))
-x = expr_raw[row_var > quantiles[96],]
-dim(x)
+x = t(expr_raw)
 
-y = as.factor(meta_data$ABC_GCB)
-x = t(x)
-
-preProcess_missingdata_model <- preProcess(x, method='knnImpute')
-preProcess_missingdata_model
-
-trainData <- predict(preProcess_missingdata_model, newdata = x)
-
-preProcess_range_model <- preProcess(trainData, method='range')
-trainData <- predict(preProcess_range_model, newdata = trainData)
-
-# Append the Y variable
-
-apply(trainData[, 1:10], 2, FUN=function(x){c('min'=min(x), 'max'=max(x))})
-#trainData$Purchase = y
-
-featurePlot(
-    x = trainData[, 1:9], 
-    y = as.factor(y), 
-    plot = "box",
-    strip=strip.custom(par.strip.text=list(cex=.7)),
-    scales = list(
-        x = list(relation="free"), 
-        y = list(relation="free")
-    )
-)
-
-set.seed(100)
-options(warn=-1)
-
-subsets <- c(1:5, 10, 15, 18)
-
-ctrl <- rfeControl(functions = rfFuncs,
-                   method = "repeatedcv",
-                   repeats = 5,
-                   verbose = FALSE)
-
-#lmProfile <- rfe(
-#    x=trainData[, 1:18], y=as.factor(y),
-#    sizes = subsets,
-#    rfeControl = ctrl)
-
-#lmProfile
-#regLogistic
 training_data = matrix(as.double(x), ncol = ncol(x), nrow=nrow(x))
 rownames(training_data) = rownames(x)
 colnames(training_data) = colnames(x)
 
-training_data = as.data.frame(training_data[,which(!(is.na(training_data[1,])))])
-
+#training_data = training_data[,colnames(training_data) %in% gene_names]
 training_data[1:5,1:5]
+#length(gene_names)
 dim(training_data)
-#training_data$y = factor(y)
 
-model_mars = train(factor(y) ~ ., data=training_data, method='regLogistic')
-gene_names = model_mars$finalModel$xNames
-gene_names = str_remove_all(gene_names, pattern = "`")
-fitted <- predict( model_mars$finalModel, newx = training_data)
+#model$finalModel$W = model$finalModel$W[,gene_names %in% colnames(training_data)]
+#model$trainingData = model$trainingData[ ,colnames(model$trainingData) %in%colnames(training_data) ]
 
-varimp_mars <- varImp(model_mars)
-plot(varimp_mars, main="Variable Importance with MARS")
+model$finalModel$xNames = model$finalModel$xNames[model$finalModel$xNames %in% colnames(training_data)]
+#model$finalModel$beta = model$finalModel$beta[rownames(model$finalModel$beta) %in% colnames(training_data),]
+model$finalModel$dim[1] = length(model$finalModel$xNames)
+training_data = training_data[,model$finalModel$xNames]
 
-confusionMatrix(reference = as.factor(y), data = fitted, mode='everything', positive='MM')
+fitted <- predict( model, data.frame(training_data))
+fitted <- predict( model$finalModel, newx = training_data, 'prob')
+meta_data$Predictions = fitted$predictions
 
-# Define the training control
-# multiClassSummary
-fitControl <- trainControl(
-    method = 'cv',                   # k-fold cross validation
-    number = 5,                      # number of folds
-    savePredictions = 'final',       # saves predictions for optimal tuning parameter
-    classProbs = T,                  # should class probabilities be returned
-    summaryFunction=multiClassSummary  # results summary function
-) 
-
-#saveRDS(model_mars,"~/Downloads/mars_large.RDS")
-
+table(meta_data$Predictions, meta_data$Progression)
