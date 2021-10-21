@@ -13,7 +13,7 @@ aka3 = list(
     Complex = c(clean = "white", complex = "orange", na = "gray"),
     Cluster = c("0" = "gray", "1" = "white", "2" = "green", "3" = "blue", "4" = "brown", "5" = "black"),
     Cluster_SUV = c("SUV_high" = "darkred", "SUV_low" = "white"),
-    Drup_response = c("Resistant"="black","Never Relapsed"="White","Relapse Prone" = "Yellow") ,
+    Drug_Treatment = c("RES"="black","NR"="White","RP" = "Yellow") ,
     SUVARNESS = c("high" = "darkred", "medium" = "yellow" ,"low" ="white"),
     "TIS up" = c("high" = "darkred", "medium" = "yellow" ,"low" ="white"),
     "TIS down" = c("high" = "white", "medium" = "yellow" ,"low" ="darkred"),

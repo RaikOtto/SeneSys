@@ -50,15 +50,13 @@ for (selector in selection){
 }
 
 source("~/SeneSys/Scripts/Visualization_colors.R")
-meta_data$Drup_response = meta_data$ABC_GCB
-
 #
 
 genes_of_interest_hgnc_t = read.table("~/SeneSys/Misc/SeneSys_gene_sets.gmt.tsv",sep ="\t", stringsAsFactors = F, header = F)
 
 genes_of_interest_hgnc_t$V1
 
-i = 59
+i = 32
 genes_of_interest_hgnc_t$V1[i]
 sad_genes = genes_of_interest_hgnc_t[i,3:ncol(genes_of_interest_hgnc_t)] 
 sad_genes = sad_genes[sad_genes != ""]
@@ -71,7 +69,7 @@ correlation_matrix = cor(expr);pcr = prcomp(t(correlation_matrix))
 p = pheatmap::pheatmap(
   #expr,
   correlation_matrix,
-  annotation_col = meta_data[,c("Drup_response","Predicted",selection)],
+  annotation_col = meta_data[,c("Drug_Treatment",selection)],
   #annotation_col = meta_data[c("ABC_GCB","Cluster",selection)],
   #annotation_col = meta_data[c("ABC_GCB","Predictions","Progression",selection)],
   annotation_colors = aka3,
@@ -123,7 +121,7 @@ custom.config$random_state = sample(1:1000,size = 1)
 custom.config$n_components=2
 
 genes_of_interest_hgnc_t$V1
-i = 59
+i = 32
 sad_genes = genes_of_interest_hgnc_t[i,3:ncol(genes_of_interest_hgnc_t)] 
 sad_genes = sad_genes[sad_genes != ""]
 expr = expr_raw[match(sad_genes,  rownames(expr_raw), nomatch = 0),]
@@ -143,11 +141,11 @@ colnames(umap_result$layout) = c("x","y")
 umap_p = ggplot(
   umap_result$layout,
   aes(x, y))
-umap_p = umap_p + geom_point( aes( size = 4, color = as.character(meta_data$Predicted) ))
+umap_p = umap_p + geom_point( aes( size = 4, color = as.character(meta_data$Drug_Treatment) ))
 #umap_p = umap_p+geom_text(size= 2,aes(label=rownames(meta_data),color = as.character(meta_data$Progression)),hjust=0, vjust=0)
 #umap_p = umap_p+geom_text(size= 2,aes(label=rownames(meta_data),color = as.character(meta_data$Predictions)),hjust=0, vjust=0)
 #umap_p = umap_p + theme(legend.position = "none") + xlab("") + ylab("")
-umap_p = umap_p + stat_ellipse( linetype = 1, aes( color = meta_data$Drup_response), level=.5, type ="t", size=1.5)
+umap_p = umap_p + stat_ellipse( linetype = 1, aes( color = meta_data$Drug_Treatment), level=.5, type ="t", size=1.5)
 #umap_p = umap_p + stat_ellipse( linetype = 1, aes( color = meta_data$Predictions), level=.5, type ="t", size=1.5)
 umap_p = umap_p + scale_color_manual( values = c("darkgreen","green","yellow","darkred","black")) ##33ACFF ##FF4C33
 umap_p

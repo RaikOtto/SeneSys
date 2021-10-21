@@ -30,8 +30,8 @@ colnames(meta_info) = str_replace(colnames(meta_info),pattern = "\\.","_")
 
 ###
 
-model = readRDS("~/Downloads/rpar.RDS")
-model$finalModel$xNames = str_remove_all(model$finalModel$xNames, pattern = "`")
+model = readRDS("~/Downloads/RandomForest.RDS")
+#model$finalModel$xNames = str_remove_all(model$finalModel$xNames, pattern = "`")
 #rownames(model$finalModel$beta) = str_remove_all(rownames(model$finalModel$beta), pattern = "`")
 #gene_names = rownames(model$finalModel$beta)
 #colnames(model$finalModel$W) = str_remove_all(colnames(model$finalModel$W), pattern = "`")

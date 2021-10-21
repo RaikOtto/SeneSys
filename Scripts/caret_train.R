@@ -30,7 +30,7 @@ colnames(meta_info) = str_replace(colnames(meta_info),pattern = "\\.","_")
 
 ###
 
-path_transcriptome_file = "~/SeneSys/Data/Data_9461.Counts.DeSeq2.HGNC.tsv"
+path_transcriptome_file = "~/SeneSys/Data/Data_9461.Counts.HGNC.tsv"
 expr_raw = read.table(path_transcriptome_file,sep="\t", stringsAsFactors =  F, header = T, row.names = 1,as.is = F)
 colnames(expr_raw) = str_replace(colnames(expr_raw), pattern = "^X", "")
 allowed_genes = unique(read.table("~/SeneSys/Data/Allowed_genes.tsv",sep = "\t", header = F)[,1])
@@ -38,6 +38,8 @@ expr_raw = expr_raw[rownames(expr_raw) %in% allowed_genes,]
 expr_raw[1:5,1:5]
 dim(expr_raw)
 
+meta_data = meta_info[colnames(expr_raw),]
+expr_raw = expr_raw[,meta_data$Drug_Treatment %in% c("NR","RP")]
 meta_data = meta_info[colnames(expr_raw),]
 
 row_var = apply(expr_raw, FUN = var, MARGIN = 1)
@@ -56,9 +58,8 @@ training_data = as.data.frame(training_data[,which(!(is.na(training_data[1,])))]
 #genes = c("RPL13","LGALS9","CALM1","CCT3","TUBB5","CD79A","RPS11","RPL8","PSAP","HDGF","HNRNPA2B1","EIF4G2","RPS9","CRIP1","CDK4","RPLP1","UBC","RPS18","RPL10","RPS15A","RPS25","RPL15","RPS5","HSPA8","ANP32E","SLC25A5","RPL19","SERINC3","PFN1","LSP1","UBB","MKNK2","CYFIP2","RACK1","RPS27A","DDX5","ATP2A3","PRPF8","TOP2A","HSP90AA1","SYK","HNRNPK","TKT","LCP1","CCT5","PABPC1","MYC","MYH9")
 #training_data = training_data[,colnames(training_data) %in% genes]
 
-y = as.character(meta_data$ABC_GCB)
+y = as.character(meta_data$Drug_Treatment)
 y = make.names(y)
-y[y %in% c("Relapse.Prone","Resistant")] = "RPR"
 training_data$outcome = as.factor(y)
 colnames(training_data) = make.names(str_remove_all(colnames(training_data),"`"))
 
@@ -78,16 +79,17 @@ trControl <- trainControl(
     search = 'grid',
     savePredictions = 'final',       
     classProbs = T,                  
-    #summaryFunction=multiClassSummary,
+    summaryFunction="twoClassSummary",
     allowParallel = TRUE)
 
 fit.LR = caret::train(
     outcome~.,
     data = training_data,
-    method="svmPoly",
+    method="rf",
     metric= "Accuracy",
     preProc=c("center", "scale"),
-    trControl=trControl
+    trControl=trControl,
+    tuneLength = 3
 )
 print(fit.LR)
 fit.LR$finalModel
@@ -99,10 +101,11 @@ imp_genes = str_replace_all(rownames(ordered_imp)[order(ordered_imp$Overall,decr
 plot(fit.LR, main="Variable Importance with MARS",top = 20)
 
 fitted = as.character(predict(fit.LR, as.matrix(training_data[,colnames(training_data) != "outcome"])))
-confusionMatrix(reference = as.factor(y), data = as.factor(fitted), positive='Never.Relapsed')
+confusionMatrix(reference = as.factor(y), data = as.factor(fitted), positive='NR')
 
 meta_data$Predicted = fitted
 
-saveRDS(fit.LR,"~/Downloads/svm_poly.RDS")
+#saveRDS(fit.LR,"~/Downloads/RandomForest.RDS")
 
 
+#write.table(expr_raw,"~/SeneSys/Data/Data_9461.Counts.DeSeq2.HGNC.tsv",sep ="\t", row.names = T, quote =F)
