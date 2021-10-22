@@ -17,10 +17,10 @@ meta_info = meta_info[meta_info$Study != "GSE11318",]
 rownames(meta_info) = meta_info$Sample
 
 
-#expr_raw = read.table("~/MAPTor_NET/BAMs/TPMs.57_Samples.Groetzinger_Scarpa.Non_normalized.HGNC.tsv",sep ="\t", as.is = T,header = T, row.names = 1, fill = T)
 expr_raw = read.table("~/SeneSys/Data/Schmitz.HGNC.tsv",sep ="\t", as.is = T,header = T, row.names = 1, fill = T)
 colnames(expr_raw) = str_replace(colnames(expr_raw), pattern = "^X", "")
 expr_raw[1:5,1:5]
+dim(expr_raw)
 
 expr_raw = expr_raw[ ,which(colnames(expr_raw) %in% meta_info$Sample ) ]
 meta_data = meta_info[colnames(expr_raw),]
@@ -30,8 +30,10 @@ gmt_file = read.gmt("~/SeneSys/Misc/SeneSys_gene_sets.gmt")
 row_var = apply(expr_raw, FUN = var, MARGIN = 1)
 summary(row_var)
 expr = expr_raw[row_var > median(row_var),]
+dim(expr)
 
 fe_es = gsva(as.matrix(expr), gmt_file, min.sz=10, max.sz=500, verbose=TRUE)
+dim(fe_es)
 #write.table(fe_es,"~/SeneSys/Results/Schmitz.GSVA.tsv",sep ="\t",quote = F,row.names = T)
 
 #####
@@ -53,4 +55,6 @@ meta_data[colnames(vis_mat),"SUVARNESS"] = vis_mat["SUVARNESS",]
 meta_data["ABC_GCB"] = str_replace_all(meta_data[,"ABC_GCB"],pattern = " ", "")
 
 ##
-
+results = cbind(meta_data$Sample,meta_data$Drug_Treatment)
+#write.table(expr,"~/Dropbox/testproject/Data_9461.Counts.HGNC.tsv",sep ="\t",quote = F,row.names = T)
+#write.table(results,"~/Dropbox/testproject/Target_vector_drug_response.tsv",sep ="\t",quote = F,row.names = T)

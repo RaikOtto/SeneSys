@@ -38,7 +38,7 @@ model = readRDS("~/Downloads/RandomForest.RDS")
 #gene_names = model$finalModel$xNames
 #gene_names = str_remove_all(gene_names, pattern = "`")
 
-path_transcriptome_file = "~/SeneSys/Data/Schmitz.HGNC.DESeq2.tsv"
+path_transcriptome_file = "~/SeneSys/Data/Schmitz.HGNC.tsv"
 expr_raw = read.table(path_transcriptome_file,sep="\t", stringsAsFactors =  F, header = T, row.names = 1,as.is = F)
 colnames(expr_raw) = str_replace(colnames(expr_raw), pattern = "^X", "")
 
@@ -68,3 +68,18 @@ fitted <- predict( model$finalModel, newx = training_data, 'prob')
 meta_data$Predictions = fitted$predictions
 
 table(meta_data$Predictions, meta_data$Progression)
+
+###
+
+ml_model_genes = read.table("~/Dropbox/testproject/features.csv", sep =",", header =T)[,2]
+ml_model_genes = str_remove(ml_model_genes, "(_0|_1|_2)")
+ml_model_genes = unique(ml_model_genes)
+allowed_genes = read.table("~/Dropbox/testproject/Data_9461.Counts.HGNC.tsv",sep = "\t", header = T)
+allowed_genes = rownames(allowed_genes)
+matcher = match(allowed_genes, rownames(expr_raw), nomatch = 0)
+table(matcher == 0)
+
+expr = expr_raw[matcher,]
+write.table(t(expr),"~/Dropbox/testproject/Schmitz_S2546.HGNC.tsv",sep ="\t", row.names = TRUE, quote = FALSE)
+
+

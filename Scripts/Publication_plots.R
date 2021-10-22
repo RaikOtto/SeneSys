@@ -18,7 +18,9 @@ rownames(meta_info) = meta_info$Sample
 colnames(meta_info) = str_replace(colnames(meta_info),pattern = "\\.","_")
 
 #path_transcriptome_file = "~/SeneSys/Data/Data_9461.Counts.DeSeq2.HGNC.tsv"
+#path_transcriptome_file = "~/SeneSys/Data/Data_9461.Counts.HGNC.tsv"
 path_transcriptome_file = "~/SeneSys/Data/Schmitz.HGNC.DESeq2.tsv"
+path_transcriptome_file = "~/SeneSys/Data/Schmitz.HGNC.tsv"
 #path_transcriptome_file = "~/SeneSys/Data/GSE98588.DESeq2.tsv"
 
 expr_raw = read.table(path_transcriptome_file,sep="\t", stringsAsFactors =  F, header = T, as.is = F,row.names = 1)
@@ -27,19 +29,22 @@ expr_raw[1:5,1:5]
 
 table(colnames(expr_raw) %in% meta_info$Sample)
 meta_data = meta_info[colnames(expr_raw),]
-#meta_data$Cluster = as.factor(meta_data$Cluster)
 
-#fe_es = read.table("~/SeneSys/Results/Schmitz.GSVA.tsv",sep ="\t", header = T,as.is = T,row.names = 1)
-fe_es = read.table("~/SeneSys/Results/Data_9461.DESeq2.GSVA.tsv",sep ="\t", header = T,as.is = T,row.names = 1)
+#expr_raw = expr_raw[,meta_data$Drug_Treatment %in% c("NR","RP")]
+#meta_data = meta_info[colnames(expr_raw),]
+
+fe_es = read.table("~/SeneSys/Results/Schmitz.GSVA.tsv",sep ="\t", header = T,as.is = T,row.names = 1)
+#fe_es = read.table("~/SeneSys/Results/Data_9461.GSVA.tsv",sep ="\t", header = T,as.is = T,row.names = 1)
 #fe_es = read.table("~/SeneSys/Results/GSE98588.DESeq2.GSVA.tsv",sep ="\t", header = T,as.is = T,row.names = 1)
+rownames(fe_es) = make.names(rownames(fe_es))
 
-selection = c("Left_Right","CARDness","SUVARNESS","TIS up")
+selection = c("TANG_SENESCENCE_TP53_TARGETS_DN","ML_core","TIS.down","Left_Right_Hema_combined")
 for (selector in selection){
   
-  vector_ori = as.double(fe_es[selector,colnames(expr)])
+  vector_ori = as.double(fe_es[selector,colnames(expr_raw)])
   
   quantiles = as.double(quantile(vector_ori, seq(0,1,0.01)))
-  threshold = quantiles[51]
+  threshold = quantiles[67]
   #thresh_low = quantiles[34]
   #thresh_high = quantiles[67]
   vector = rep("high",length(vector_ori) )
@@ -56,9 +61,10 @@ genes_of_interest_hgnc_t = read.table("~/SeneSys/Misc/SeneSys_gene_sets.gmt.tsv"
 
 genes_of_interest_hgnc_t$V1
 
-i = 32
+i = 62
 genes_of_interest_hgnc_t$V1[i]
 sad_genes = genes_of_interest_hgnc_t[i,3:ncol(genes_of_interest_hgnc_t)] 
+#sad_genes = sad_genes[1:50]
 sad_genes = sad_genes[sad_genes != ""]
 
 table(sad_genes %in% rownames(expr_raw))
@@ -69,9 +75,9 @@ correlation_matrix = cor(expr);pcr = prcomp(t(correlation_matrix))
 p = pheatmap::pheatmap(
   #expr,
   correlation_matrix,
-  annotation_col = meta_data[,c("Drug_Treatment",selection)],
+  #annotation_col = meta_data[,c("Drug_Treatment",selection)],
   #annotation_col = meta_data[c("ABC_GCB","Cluster",selection)],
-  #annotation_col = meta_data[c("ABC_GCB","Predictions","Progression",selection)],
+  annotation_col = meta_data[,c("Prediction","Progression",selection)],
   annotation_colors = aka3,
   show_rownames = F,
   show_colnames = F,
@@ -88,29 +94,24 @@ p
 index = p$tree_col$labels[ p$tree_col$order]
 subtype_vector = rep("right", ncol(expr))
 subtype_vector[1:(which(index == "AS_222823_LR_34436"))] = "left"
-meta_info$Left_Right =rep("",nrow(meta_info))
-matcher = match(index, meta_info$Sample)
-meta_info[matcher,"Left_Right"] = subtype_vector
+#meta_info$Left_Right =rep("",nrow(meta_info))
+#matcher = match(index, meta_info$Sample)
+#meta_info[matcher,"Left_Right"] = subtype_vector
 
 ## Figure 1
 
 table(meta_data$Left_Right,meta_data$Progression)
-pheatmap::pheatmap(table(meta_data$Cluster,meta_data$ABC_GCB))
 
 ###
 
 p = ggbiplot::ggbiplot(
   pcr,
-  #labels = meta_data$Drup_response,
-  groups = meta_data$Drup_response,
+  groups = meta_data$Drug_Treatment,
   var.axes = F,
-  ellipse = TRUE,
-  obs.scale = 1,
-  var.scale = 1,
-  labels.size = 2
+  ellipse = TRUE
 )
-p = p + scale_color_manual(values = c("darkgreen","orange","black"))
-#p = p + xlim(-1.9,1.3) + ylim(-.85,1.2) # Fig 5
+p = p + geom_point(aes(colour=meta_data$Drug_Treatment), size = 4)
+p = p + scale_color_manual(values = c("darkgreen","black","orange"))
 p
 
 # umap
@@ -121,9 +122,10 @@ custom.config$random_state = sample(1:1000,size = 1)
 custom.config$n_components=2
 
 genes_of_interest_hgnc_t$V1
-i = 32
+i = 62
 sad_genes = genes_of_interest_hgnc_t[i,3:ncol(genes_of_interest_hgnc_t)] 
 sad_genes = sad_genes[sad_genes != ""]
+sad_genes = sad_genes[1:50]
 expr = expr_raw[match(sad_genes,  rownames(expr_raw), nomatch = 0),]
 #expr[1:5,1:5]
 correlation_matrix = cor(expr);pcr = prcomp(t(correlation_matrix))
@@ -144,21 +146,15 @@ umap_p = ggplot(
 umap_p = umap_p + geom_point( aes( size = 4, color = as.character(meta_data$Drug_Treatment) ))
 #umap_p = umap_p+geom_text(size= 2,aes(label=rownames(meta_data),color = as.character(meta_data$Progression)),hjust=0, vjust=0)
 #umap_p = umap_p+geom_text(size= 2,aes(label=rownames(meta_data),color = as.character(meta_data$Predictions)),hjust=0, vjust=0)
-#umap_p = umap_p + theme(legend.position = "none") + xlab("") + ylab("")
+umap_p = umap_p +  xlab("") + ylab("")  
 umap_p = umap_p + stat_ellipse( linetype = 1, aes( color = meta_data$Drug_Treatment), level=.5, type ="t", size=1.5)
 #umap_p = umap_p + stat_ellipse( linetype = 1, aes( color = meta_data$Predictions), level=.5, type ="t", size=1.5)
-umap_p = umap_p + scale_color_manual( values = c("darkgreen","green","yellow","darkred","black")) ##33ACFF ##FF4C33
+umap_p = umap_p + scale_color_manual( values = c("darkgreen","orange"),name="Drug_treatment") ##33ACFF ##FF4C33
 umap_p
 genes_of_interest_hgnc_t$V1[i]
 #custom.config$random_state
 
-
 ################
-
-
-
-
-
 
 for ( i in 1:nrow(genes_of_interest_hgnc_t)){
   
@@ -243,3 +239,57 @@ table(cluster_left_right)
 meta_data$Cluster_2 = meta_data$Cluster
 meta_data$Cluster_2[meta_data$Cluster_2 %in% c("3","4")] = "34"
 meta_data$Cluster_2[meta_data$Cluster_2 %in% c("0","1","2","5")] = "0125"
+
+####
+
+meta_data = meta_info[colnames(fe_es),]
+fe_es = fe_es[,colnames(expr_raw)]
+
+NR_vec =c()
+NP_vec = c()
+
+for (i in 1:nrow(fe_es)){
+  values = as.double(as.character(fe_es[i,]))
+  cohort = list(meta_data$Drug_Treatment)
+  result = aggregate(
+    values,
+    FUN = mean,
+    by = cohort
+  )
+  NR_vec = c(NR_vec, result[1,2])
+  NP_vec = c(NP_vec, result[2,2])
+}
+
+NR_vec
+NP_vec
+
+which.max(abs(NR_vec - NP_vec))
+
+rownames(fe_es)[order(abs(NR_vec - NP_vec), decreasing = TRUE)[1:3]]
+
+###
+selection = c("TANG_SENESCENCE_TP53_TARGETS_DN","ML_core","TIS.down","Left_Right_Hema_combined")
+for (selector in selection){
+  
+  vector_ori = as.double(fe_es[selector,colnames(expr_raw)])
+  
+  quantiles = as.double(quantile(vector_ori, seq(0,1,0.01)))
+  threshold = quantiles[51]
+  #thresh_low = quantiles[34]
+  #thresh_high = quantiles[67]
+  vector = rep("high",length(vector_ori) )
+  #vector[vector_ori <= thresh_high] = "medium"
+  #vector[vector_ori <= thresh_low] = "low"
+  vector[vector_ori <= threshold] = "low"
+  meta_data[,selector] = vector
+}
+
+
+data = as.data.frame(cbind(meta_data$Progression,meta_data$Left_Right_Hema_combined))
+table(data)
+chisq.test(table(data))
+hist(as.double(fe_es["TANG_SENESCENCE_TP53_TARGETS_DN",]))
+
+###
+data = as.data.frame(cbind(meta_data$Progression,meta_data$ML_core))
+table(data)
