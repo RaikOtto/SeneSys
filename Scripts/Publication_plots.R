@@ -17,11 +17,12 @@ meta_info = meta_info[meta_info$Sample!="",]
 rownames(meta_info) = meta_info$Sample
 colnames(meta_info) = str_replace(colnames(meta_info),pattern = "\\.","_")
 
-#path_transcriptome_file = "~/SeneSys/Data/Data_9461.Counts.DeSeq2.HGNC.tsv"
+path_transcriptome_file = "~/SeneSys/Data/Data_9461.Counts.DeSeq2.HGNC.tsv"
 #path_transcriptome_file = "~/SeneSys/Data/Data_9461.Counts.HGNC.tsv"
-path_transcriptome_file = "~/SeneSys/Data/Schmitz.HGNC.DESeq2.tsv"
-path_transcriptome_file = "~/SeneSys/Data/Schmitz.HGNC.tsv"
+#path_transcriptome_file = "~/SeneSys/Data/Schmitz.HGNC.DESeq2.tsv"
+#path_transcriptome_file = "~/SeneSys/Data/Schmitz.HGNC.tsv"
 #path_transcriptome_file = "~/SeneSys/Data/GSE98588.DESeq2.tsv"
+#path_transcriptome_file = "~/SeneSys/Data/GSE98588.tsv"
 
 expr_raw = read.table(path_transcriptome_file,sep="\t", stringsAsFactors =  F, header = T, as.is = F,row.names = 1)
 colnames(expr_raw) = str_replace(colnames(expr_raw), pattern = "^X", "")
@@ -30,15 +31,15 @@ expr_raw[1:5,1:5]
 table(colnames(expr_raw) %in% meta_info$Sample)
 meta_data = meta_info[colnames(expr_raw),]
 
-#expr_raw = expr_raw[,meta_data$Drug_Treatment %in% c("NR","RP")]
-#meta_data = meta_info[colnames(expr_raw),]
+expr_raw = expr_raw[,meta_data$Drug_Treatment %in% c("NR","RP")]
+meta_data = meta_info[colnames(expr_raw),]
 
-fe_es = read.table("~/SeneSys/Results/Schmitz.GSVA.tsv",sep ="\t", header = T,as.is = T,row.names = 1)
-#fe_es = read.table("~/SeneSys/Results/Data_9461.GSVA.tsv",sep ="\t", header = T,as.is = T,row.names = 1)
-#fe_es = read.table("~/SeneSys/Results/GSE98588.DESeq2.GSVA.tsv",sep ="\t", header = T,as.is = T,row.names = 1)
+#fe_es = read.table("~/SeneSys/Results/Schmitz.GSVA.tsv",sep ="\t", header = T,as.is = T,row.names = 1)
+fe_es = read.table("~/SeneSys/Results/Data_9461.GSVA.tsv",sep ="\t", header = T,as.is = T,row.names = 1)
+#fe_es = read.table("~/SeneSys/Results/GSE98588.HGNC.GSVA.tsv",sep ="\t", header = T,as.is = T,row.names = 1)
 rownames(fe_es) = make.names(rownames(fe_es))
 
-selection = c("TANG_SENESCENCE_TP53_TARGETS_DN","ML_core","TIS.down","Left_Right_Hema_combined")
+selection = c("ML_core","TIS.down","Left_Right_Hema_combined")
 for (selector in selection){
   
   vector_ori = as.double(fe_es[selector,colnames(expr_raw)])
@@ -64,43 +65,44 @@ genes_of_interest_hgnc_t$V1
 i = 62
 genes_of_interest_hgnc_t$V1[i]
 sad_genes = genes_of_interest_hgnc_t[i,3:ncol(genes_of_interest_hgnc_t)] 
-#sad_genes = sad_genes[1:50]
+sad_genes = sad_genes[1:50]
 sad_genes = sad_genes[sad_genes != ""]
 
 table(sad_genes %in% rownames(expr_raw))
 expr = expr_raw[match(sad_genes,  rownames(expr_raw), nomatch = 0),]
-#expr[1:5,1:5]
+
+#colnames(expr) = meta_data$Sample
+#rownames(meta_data) = meta_data$Sample
+expr[1:5,1:5]
 correlation_matrix = cor(expr);pcr = prcomp(t(correlation_matrix))
 
 p = pheatmap::pheatmap(
   #expr,
   correlation_matrix,
-  #annotation_col = meta_data[,c("Drug_Treatment",selection)],
-  #annotation_col = meta_data[c("ABC_GCB","Cluster",selection)],
-  annotation_col = meta_data[,c("Prediction","Progression",selection)],
+  annotation_col = meta_data[,c("Drug_Treatment",selection)],
+  #annotation_col = meta_data[c("Left_Right_ML_core_50","ABC_GCB","Cluster",selection)],
+  #annotation_col = meta_data[,c("ABC_GCB","Progression",selection)],
   annotation_colors = aka3,
   show_rownames = F,
-  show_colnames = F,
+  show_colnames = FALSE,
   treeheight_col = 0,
   treeheight_row = 0,
   legend = F,
   cluster_rows = T,
   cluster_cols = T,
   fontsize_col = 7,
-  clustering_method = "ward.D2"
+  clustering_method = "ward.D"
 )
 p
 
 index = p$tree_col$labels[ p$tree_col$order]
 subtype_vector = rep("right", ncol(expr))
-subtype_vector[1:(which(index == "AS_222823_LR_34436"))] = "left"
-#meta_info$Left_Right =rep("",nrow(meta_info))
-#matcher = match(index, meta_info$Sample)
-#meta_info[matcher,"Left_Right"] = subtype_vector
+subtype_vector[1:(which(index == "GSM2601448"))] = "left" #GSM2601412
+meta_info$Left_Right_ML_core_50 =rep("",nrow(meta_info))
+matcher = match(index, meta_info$Sample)
+meta_info[matcher,"Left_Right_ML_core_50"] = subtype_vector
 
 ## Figure 1
-
-table(meta_data$Left_Right,meta_data$Progression)
 
 ###
 
@@ -111,7 +113,7 @@ p = ggbiplot::ggbiplot(
   ellipse = TRUE
 )
 p = p + geom_point(aes(colour=meta_data$Drug_Treatment), size = 4)
-p = p + scale_color_manual(values = c("darkgreen","black","orange"))
+p = p + scale_color_manual(values = c("darkgreen","orange"))
 p
 
 # umap
@@ -127,12 +129,14 @@ sad_genes = genes_of_interest_hgnc_t[i,3:ncol(genes_of_interest_hgnc_t)]
 sad_genes = sad_genes[sad_genes != ""]
 sad_genes = sad_genes[1:50]
 expr = expr_raw[match(sad_genes,  rownames(expr_raw), nomatch = 0),]
+expr = expr[,meta_data$ABC_GCB != "Unclassified"]
+meta_data_plot = meta_info[colnames(expr),]
 #expr[1:5,1:5]
 correlation_matrix = cor(expr);pcr = prcomp(t(correlation_matrix))
 
 umap_result = umap::umap(
   correlation_matrix,
-  colvec = meta_data$Drup_response,
+  colvec = meta_data_plot$Drug_Treatment,
   preserve.seed = TRUE,
   config=custom.config
 )
@@ -143,13 +147,11 @@ colnames(umap_result$layout) = c("x","y")
 umap_p = ggplot(
   umap_result$layout,
   aes(x, y))
-umap_p = umap_p + geom_point( aes( size = 4, color = as.character(meta_data$Drug_Treatment) ))
-#umap_p = umap_p+geom_text(size= 2,aes(label=rownames(meta_data),color = as.character(meta_data$Progression)),hjust=0, vjust=0)
-#umap_p = umap_p+geom_text(size= 2,aes(label=rownames(meta_data),color = as.character(meta_data$Predictions)),hjust=0, vjust=0)
+umap_p = umap_p + geom_point( aes( size = 4, color = as.character(meta_data_plot$Drug_Treatment) ))
+#umap_p = umap_p+geom_text(size= 4,aes(label=rownames(meta_data),color = as.character(meta_data$Cluster)),hjust=0, vjust=0)
 umap_p = umap_p +  xlab("") + ylab("")  
-umap_p = umap_p + stat_ellipse( linetype = 1, aes( color = meta_data$Drug_Treatment), level=.5, type ="t", size=1.5)
-#umap_p = umap_p + stat_ellipse( linetype = 1, aes( color = meta_data$Predictions), level=.5, type ="t", size=1.5)
-umap_p = umap_p + scale_color_manual( values = c("darkgreen","orange"),name="Drug_treatment") ##33ACFF ##FF4C33
+umap_p = umap_p + stat_ellipse( linetype = 1, aes( color = meta_data_plot$Drug_Treatment), level=.5, type ="t", size=1.5)
+#umap_p = umap_p + scale_color_manual( values = c("darkgreen","orange"),name="Drug_treatment") ##33ACFF ##FF4C33
 umap_p
 genes_of_interest_hgnc_t$V1[i]
 #custom.config$random_state
@@ -232,9 +234,11 @@ for ( i in 1:nrow(genes_of_interest_hgnc_t)){
 
 #write.table(meta_info,"~/SeneSys/Misc/Meta_information.tsv",sep ="\t",quote =F,row.names = F)
 
-cluster_left_right = as.data.frame(cbind(meta_data$Cluster,meta_data$Left_Right))
-cluster_left_right$V2 = factor(cluster_left_right$V2, levels = c("high","medium","low"))
-table(cluster_left_right)
+data_t = as.data.frame(cbind(meta_data$Left_Right_ML_core_50,meta_data$Cluster))
+table(data_t)
+
+data_t = as.data.frame(cbind(meta_data$Left_Right_ML_core_50,meta_data$ABC_GCB))
+table(data_t)
 
 meta_data$Cluster_2 = meta_data$Cluster
 meta_data$Cluster_2[meta_data$Cluster_2 %in% c("3","4")] = "34"
@@ -285,10 +289,10 @@ for (selector in selection){
 }
 
 
-data = as.data.frame(cbind(meta_data$Progression,meta_data$Left_Right_Hema_combined))
+data = as.data.frame(cbind(meta_data$Cluster,meta_data$ML_core))
 table(data)
 chisq.test(table(data))
-hist(as.double(fe_es["TANG_SENESCENCE_TP53_TARGETS_DN",]))
+hist(as.double(fe_es["ML_core",]))
 
 ###
 data = as.data.frame(cbind(meta_data$Progression,meta_data$ML_core))

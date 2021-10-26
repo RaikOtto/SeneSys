@@ -17,7 +17,7 @@ meta_info = meta_info[meta_info$Study != "GSE11318",]
 rownames(meta_info) = meta_info$Sample
 
 
-expr_raw = read.table("~/SeneSys/Data/Schmitz.HGNC.tsv",sep ="\t", as.is = T,header = T, row.names = 1, fill = T)
+expr_raw = read.table("~/SeneSys/Data/Data_9461.Counts.HGNC.tsv",sep ="\t", as.is = T,header = T, row.names = 1, fill = T)
 colnames(expr_raw) = str_replace(colnames(expr_raw), pattern = "^X", "")
 expr_raw[1:5,1:5]
 dim(expr_raw)
@@ -34,7 +34,7 @@ dim(expr)
 
 fe_es = gsva(as.matrix(expr), gmt_file, min.sz=10, max.sz=500, verbose=TRUE)
 dim(fe_es)
-#write.table(fe_es,"~/SeneSys/Results/Schmitz.GSVA.tsv",sep ="\t",quote = F,row.names = T)
+#write.table(fe_es,"~/SeneSys/Results/GSE98588.HGNC.GSVA.tsv",sep ="\t",quote = F,row.names = T)
 
 #####
 

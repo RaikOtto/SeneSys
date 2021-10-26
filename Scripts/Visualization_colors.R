@@ -21,6 +21,7 @@ aka3 = list(
     CARDness = c("high" = "darkred", "medium" = "yellow" ,"low" ="white"),
     PFS_vis = c("Progression" = "black", "No_progression" = "white"),
     Progression = c("Progression" = "black", "No Progression" = "white"),
+    ML_core = c("high" = "black", "low" = "white"),
     TANG_SENESCENCE_TP53_TARGETS_DN = c("high" = "black", "low" = "white"),
     Left_Right_Hema_combined = c("high" = "black", "low" = "white"),
     "TIS.down" = c("high" = "black", "low" = "white"),
@@ -32,5 +33,6 @@ aka3 = list(
     NEC_NET_Color = c(NEC= "red", NET = "blue", Ambiguous = "purple"),
     Study = c(Riemer = "gray", Scarpa = "darkgreen"),
     #Predicted = c("Never Relapsed" = "green", "Relapse Prone" = "yellow", "Resistant" = "red"),
-    Predicted = c("Never.Relapsed" = "green", "RPR" = "red")
+    Predicted = c("Never.Relapsed" = "green", "RPR" = "red"),
+    "Left_Right_ML_core_50" = c("left" = "blue", "right" = "red")
 )
