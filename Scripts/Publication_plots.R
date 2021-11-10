@@ -11,18 +11,22 @@ draw_colnames_45 <- function (coln, gaps, ...) {
   return(res)}
 assignInNamespace(x="draw_colnames", value="draw_colnames_45",ns=asNamespace("pheatmap"))
 
-meta_info = read.table("~/SeneSys/Misc/Meta_information.tsv",sep = "\t",header = T,stringsAsFactors = F)
+#meta_info = read.table("~/SeneSys/Misc/Meta_information.tsv",sep = "\t",header = T,stringsAsFactors = F)
+meta_info = read.table("~/Dropbox/testproject/IC50_log_regression.features.csv",sep = "\t",header = FALSE,stringsAsFactors = F)
+meta_info = read.table("~/Dropbox/testproject/IC50.csv",sep = "\t",header = T,stringsAsFactors = F)
+meta_info = read.table("~/Dropbox/testproject/SABGal.csv",sep = "\t",header = T,stringsAsFactors = F)
 meta_info = meta_info %>% dplyr::filter(Study != "GSE11318")
 meta_info = meta_info[meta_info$Sample!="",]
 rownames(meta_info) = meta_info$Sample
 colnames(meta_info) = str_replace(colnames(meta_info),pattern = "\\.","_")
 
+path_transcriptome_file = "~/Dropbox/testproject/SABGal_exp.csv"
 #path_transcriptome_file = "~/SeneSys/Data/Data_9461.Counts.DeSeq2.HGNC.tsv"
 #path_transcriptome_file = "~/SeneSys/Data/Data_9461.Counts.HGNC.tsv"
 #path_transcriptome_file = "~/SeneSys/Data/Schmitz.HGNC.DESeq2.tsv"
 #path_transcriptome_file = "~/SeneSys/Data/Schmitz.HGNC.tsv"
 #path_transcriptome_file = "~/SeneSys/Data/GSE98588.DESeq2.tsv"
-path_transcriptome_file = "~/SeneSys/Data/GSE98588_new.HGNC.tsv"
+#path_transcriptome_file = "~/SeneSys/Data/GSE98588_new.HGNC.tsv"
 
 
 expr_raw = read.table(path_transcriptome_file,sep="\t", stringsAsFactors =  F, header = T, as.is = F,row.names = 1)
@@ -36,8 +40,8 @@ meta_data = meta_info[colnames(expr_raw),]
 #meta_data = meta_info[colnames(expr_raw),]
 
 #fe_es = read.table("~/SeneSys/Results/Schmitz.GSVA.tsv",sep ="\t", header = T,as.is = T,row.names = 1)
-#fe_es = read.table("~/SeneSys/Results/Data_9461.GSVA.tsv",sep ="\t", header = T,as.is = T,row.names = 1)
-fe_es = read.table("~/SeneSys/Results/GSE98588.new.HGNC.GSVA.tsv",sep ="\t", header = T,as.is = T,row.names = 1)
+fe_es = read.table("~/SeneSys/Results/Data_9461.GSVA.tsv",sep ="\t", header = T,as.is = T,row.names = 1)
+#fe_es = read.table("~/SeneSys/Results/GSE98588.new.HGNC.GSVA.tsv",sep ="\t", header = T,as.is = T,row.names = 1)
 rownames(fe_es) = make.names(rownames(fe_es))
 
 selection = c("ML_core","TIS.down","Left_Right_Hema_combined")
@@ -63,7 +67,7 @@ genes_of_interest_hgnc_t = read.table("~/SeneSys/Misc/SeneSys_gene_sets.gmt.tsv"
 
 genes_of_interest_hgnc_t$V1
 
-i = 6
+i = 60
 genes_of_interest_hgnc_t$V1[i]
 sad_genes = genes_of_interest_hgnc_t[i,3:ncol(genes_of_interest_hgnc_t)] 
 sad_genes = c(genes_of_interest_hgnc_t[6,3:ncol(genes_of_interest_hgnc_t)] ,genes_of_interest_hgnc_t[7,3:ncol(genes_of_interest_hgnc_t)] )
@@ -71,21 +75,23 @@ sad_genes = c(genes_of_interest_hgnc_t[6,3:ncol(genes_of_interest_hgnc_t)] ,gene
 sad_genes = sad_genes[sad_genes != ""]
 
 table(sad_genes %in% rownames(expr_raw))
-expr = expr_raw[match(sad_genes,  rownames(expr_raw), nomatch = 0),]
+expr = expr_raw[match(sad_genes[1:20],  rownames(expr_raw), nomatch = 0),]
+meta_data = meta_info[colnames(expr),]
 
-colnames(expr) = meta_data$Name
-rownames(meta_data) = meta_data$Name
+colnames(expr) = meta_data$Sample
+#rownames(meta_data) = meta_data$Name
 expr[1:5,1:5]
 correlation_matrix = cor(expr);pcr = prcomp(t(correlation_matrix))
 
 p = pheatmap::pheatmap(
   #expr,
   correlation_matrix,
-  #annotation_col = meta_data[,c("Drug_Treatment",selection)],
-  annotation_col = meta_data[c("Left_Right_ML_core_50","ABC_GCB","Cluster",selection)],
+  #fe_es,
+  annotation_col = meta_data[,c("Drug_Treatment",selection)],
+  #annotation_col = meta_data[c("Left_Right_ML_core_50","ABC_GCB","Cluster",selection)],
   #annotation_col = meta_data[,c("ABC_GCB","Progression",selection)],
   annotation_colors = aka3,
-  show_rownames = F,
+  show_rownames = FALSE,
   show_colnames = FALSE,
   #treeheight_col = 0,
   treeheight_row = 0,
@@ -93,7 +99,7 @@ p = pheatmap::pheatmap(
   cluster_rows = T,
   cluster_cols = T,
   fontsize_col = 7,
-  clustering_method = "ward.D"
+  clustering_method = "average"
 )
 p
 
@@ -235,7 +241,13 @@ for ( i in 1:nrow(genes_of_interest_hgnc_t)){
 
 #######################
 
-#write.table(meta_info,"~/SeneSys/Misc/Meta_information.tsv",sep ="\t",quote =F,row.names = F)
+expr_raw_ic50 = expr_raw[,meta_info$Sample]
+expr_raw_ic50[1:5,1:5]
+expr_raw_bgal = expr_raw[,meta_info$Sample]
+expr_raw_bgal[1:5,1:5]
+#expr_raw_chapuy_ic_50[1:5,1:5]
+
+#write.table(t(expr_raw_chappuy_bgal),"~/Dropbox/testproject/Chappuy_bgal.csv",sep ="\t",quote =F,row.names = TRUE)
 
 data_t = as.data.frame(cbind(meta_data$ABC_GCB,meta_data$TIS.down))
 table(data_t)
@@ -300,3 +312,9 @@ hist(as.double(fe_es["ML_core",]))
 ###
 data = as.data.frame(cbind(meta_data$Progression,meta_data$ML_core))
 table(data)
+
+
+row_var = as.double(apply(expr_raw_bgal, MARGIN = 1, FUN = var))
+summary(row_var)
+expr_raw_bgal = expr_raw_bgal[row_var >= mean(row_var),]
+dim(expr_raw_bgal)

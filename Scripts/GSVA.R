@@ -34,7 +34,7 @@ dim(expr)
 
 fe_es = gsva(as.matrix(expr), gmt_file, min.sz=10, max.sz=500, verbose=TRUE)
 dim(fe_es)
-#write.table(fe_es,"~/SeneSys/Results/GSE98588.new.HGNC.GSVA.tsv",sep ="\t",quote = F,row.names = T)
+#write.table(fe_es,"~/SeneSys/Results/Data_9461.GSVA.tsv",sep ="\t",quote = F,row.names = T)
 
 #####
 
