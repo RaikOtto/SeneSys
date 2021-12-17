@@ -27,12 +27,17 @@ aka3 = list(
     "TIS.down" = c("high" = "black", "low" = "white"),
     "E2F.target.genes" = c("high" = "black", "low" = "white"),
     TANG_SENESCENCE_TP53_TARGETS_DN = c("NR" = "black", "NP" = "white"),
-    Grading = c( G0 = "white",G1 = "Green",G2 = "Yellow", G3 = "Red"),
-    NEC_NET = c(Healthy = "white",NEC= "red", NET = "blue", Ambiguous = "purple"),
-    NEC_NET_PCA = c(NEC= "red", NET = "blue", Unknown = "white"),
+    #Grading = c( G0 = "white",G1 = "Green",G2 = "Yellow", G3 = "Red"),
+    Grading = c( "Unknown" = "gray",G1 = "Green",G2 = "Yellow", G3 = "Red"),
+    #NEC_NET = c(Healthy = "white",NEC = "red", NET = "blue", Ambiguous = "purple"),
+    NET_NEC_PCA = c(NEC= "red", NET = "blue", Unknown = "white"),
     NEC_NET_Color = c(NEC= "red", NET = "blue", Ambiguous = "purple"),
-    Study = c(Riemer = "gray", Scarpa = "darkgreen"),
+    Study = c("Charite" = "gray", Scarpa = "darkgreen"),
     #Predicted = c("Never Relapsed" = "green", "Relapse Prone" = "yellow", "Resistant" = "red"),
     Predicted = c("Never.Relapsed" = "green", "RPR" = "red"),
-    "Left_Right_ML_core_50" = c("left" = "blue", "right" = "red")
+    "Left_Right_ML_core_50" = c("left" = "blue", "right" = "red"),
+    bgal_binary = c("High" = "black", "Low" = "white","Unknown"="gray"),
+    ADR_binary = c("High" = "black", "Low" = "white"),
+    ADROHT_binary = c("High" = "black", "Low" = "white"),
+    PS_binary = c("High" = "black", "Low" = "white")
 )
