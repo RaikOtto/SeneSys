@@ -4,14 +4,8 @@ library("ggplot2")
 library("dplyr")
 library("grid")
 
-draw_colnames_45 <- function (coln, gaps, ...) {
-  coord = pheatmap:::find_coordinates(length(coln), gaps)
-  x = coord$coord - 0.5 * coord$size
-  res = textGrob(coln, x = x, y = unit(1, "npc") - unit(3,"bigpts"), vjust = 0.5, hjust = 1, rot = 90, gp = gpar(...))
-  return(res)}
-assignInNamespace(x="draw_colnames", value="draw_colnames_45",ns=asNamespace("pheatmap"))
-
 meta_info = read.table("~/SeneSys/Misc/Meta_information.tsv",sep = "\t",header = T,stringsAsFactors = F)
+#meta_info = read.table("~/SeneSys/Misc/Mouse_cell_types/Meta_information.tsv",sep = "\t",header = T,stringsAsFactors = F)
 meta_info = meta_info[meta_info$Sample!="",]
 rownames(meta_info) = meta_info$Sample
 colnames(meta_info) = str_replace(colnames(meta_info),pattern = "\\.","_")
@@ -21,7 +15,7 @@ path_transcriptome_file = "~/SeneSys/Data/Data_9461.Counts.DeSeq2.HGNC.tsv"
 #path_transcriptome_file = "~/SeneSys/Data/Data_9461.Counts.HGNC.tsv"
 #path_transcriptome_file = "~/SeneSys/Data/Schmitz.HGNC.DESeq2.tsv"
 #path_transcriptome_file = "~/SeneSys/Data/Schmitz.HGNC.tsv"
-path_transcriptome_file = "~/SeneSys/Data/GSE98588.DESeq2.tsv"
+#path_transcriptome_file = "~/SeneSys/Data/GSE98588.DESeq2.tsv"
 #path_transcriptome_file = "~/SeneSys/Data/GSE98588_new.HGNC.tsv"
 
 expr_raw = read.table(path_transcriptome_file,sep="\t", stringsAsFactors =  F, header = T, as.is = F,row.names = 1)
@@ -32,12 +26,13 @@ table(colnames(expr_raw) %in% meta_info$Sample)
 meta_data = meta_info[colnames(expr_raw),]
 
 selection = c("ADR","ADROHT","PS")
+
 for (selector in selection){
   
   vector_ori = as.double(meta_data[colnames(expr_raw),selector])
   
   quantiles = as.double(quantile(vector_ori, seq(0,1,0.01)))
-  threshold = quantiles[67]
+  threshold = quantiles[76]
   vector = rep("high",length(vector_ori) )
   vector[vector_ori <= threshold] = "low"
   meta_data[,paste(selector,"binary",sep ="_")] = vector
@@ -47,11 +42,11 @@ for (selector in selection){
 #meta_data = meta_info[colnames(expr_raw),]
 
 #fe_es = read.table("~/SeneSys/Results/Schmitz.GSVA.tsv",sep ="\t", header = T,as.is = T,row.names = 1)
-#fe_es = read.table("~/SeneSys/Results/Data_9461.GSVA.tsv",sep ="\t", header = T,as.is = T,row.names = 1)
-fe_es = read.table("~/SeneSys/Results/GSE98588.new.HGNC.GSVA.tsv",sep ="\t", header = T,as.is = T,row.names = 1)
+fe_es = read.table("~/SeneSys/Results/Data_9461.GSVA.tsv",sep ="\t", header = T,as.is = T,row.names = 1)
+#fe_es = read.table("~/SeneSys/Results/GSE98588.new.HGNC.GSVA.tsv",sep ="\t", header = T,as.is = T,row.names = 1)
 rownames(fe_es) = make.names(rownames(fe_es))
 
-selection = c("ML_core","TIS.down","Left_Right_Hema_combined")
+selection = c("ML_core","TIS.down","Left_Right_Hema_combined","TIS.up","TIS.down")
 for (selector in selection){
   
   vector_ori = as.double(fe_es[selector,colnames(expr_raw)])
@@ -59,11 +54,14 @@ for (selector in selection){
   quantiles = as.double(quantile(vector_ori, seq(0,1,0.01)))
   threshold = quantiles[67]
   vector = rep("High",length(vector_ori) )
-  vector[vector_ori <= threshold] = "How"
+  vector[vector_ori <= threshold] = "Medium_Low"
   meta_data[,selector] = vector
 }
 source("~/SeneSys/Scripts/Visualization_colors.R")
 #
+selection = c("S01","S02","S03","S04","S05")
+indeces = as.integer(apply(meta_data[,selection], FUN = function(vec){return(which.max(vec))}, MARGIN = 1))
+meta_data$Cell_state = selection[indeces]
 
 genes_of_interest_hgnc_t = read.table("~/SeneSys/Misc/SeneSys_gene_sets.gmt.tsv",sep ="\t", stringsAsFactors = F, header = F)
 
@@ -78,24 +76,30 @@ sad_genes = sad_genes[sad_genes != ""]
 
 table(sad_genes %in% rownames(expr_raw))
 expr = expr_raw[match(sad_genes,  rownames(expr_raw), nomatch = 0),]
-expr = props
-meta_data = meta_info[colnames(expr),]
-meta_data$bgal_binary[meta_data$bgal_binary == ""] = "Unknown"
+#expr_selection = c("LE1","LE2","LE3","LE4","LE5","LE6","LE7","LE8","LE9","S01","S02","S03","S04","S05")
+#expr = meta_data[,expr_selection]
+#meta_data = meta_info[colnames(expr),]
+#meta_data$bgal_binary[meta_data$bgal_binary == ""] = "Unknown"
+#meta_data$Lymphoma_Ecotype[meta_data$Lymphoma_Ecotype == ""] = "Unknown"
+#meta_data$B_cell_state[meta_data$B_cell_state == ""] = "Unknown"
 
-colnames(expr) = meta_data$Sample
-#rownames(meta_data) = meta_data$Name
+rownames(meta_data) = meta_data$Sample
+#rownames(expr) = meta_data$Name
 expr[1:5,1:5]
-correlation_matrix = cor(t(expr));
+expr = expr[,colnames(expr) != "GSM2601431"]
+expr = expr[,meta_data[colnames(expr),"ABC_GCB"] != "Unclassified"]
+expr = expr[,meta_data[colnames(expr),"Drug_Treatment"] != "RES"]
+correlation_matrix = cor((expr));
 pcr = prcomp(t(correlation_matrix))
 
 source("~/SeneSys/Scripts/Visualization_colors.R")
 p = pheatmap::pheatmap(
-  #expr,
+  #scale(t(expr)),
   correlation_matrix,
   #fe_es,
-  #annotation_col = meta_data[,c("Drug_Treatment","ADROHT_binary","ADR_binary","bgal_binary")],
-  annotation_col = meta_data[c("ABC_GCB","Cluster","ADR_binary","PS_binary")],
-  #annotation_col = meta_data[,c("ABC_GCB","Progression","ADR_binary","ADROHT_binary","PS_binary")],
+  annotation_col = meta_data[,c("Drug_Treatment","Response","Cell_state")],
+  #annotation_col = meta_data[,c("ABC_GCB","Left_Right","Cell_state","TIS.down","TIS.up")],
+  #annotation_col = meta_data[,c("ABC_GCB","Left_Right","TIS.down")],
   annotation_colors = aka3,
   show_rownames = FALSE,
   show_colnames = FALSE,
@@ -107,29 +111,106 @@ p = pheatmap::pheatmap(
   fontsize_col = 7,
   clustering_method = "ward.D2"
 )
+
+#svg(filename = "~/Downloads/Mice_1.svg", width = 10, height = 10)
 p
+dev.off()
 
 index = p$tree_col$labels[ p$tree_col$order]
-subtype_vector = rep("right", ncol(expr))
-subtype_vector[1:(which(index == "GSM2601448"))] = "left" #GSM2601412
-meta_info$Left_Right_ML_core_50 =rep("",nrow(meta_info))
-matcher = match(index, meta_info$Sample)
-meta_info[matcher,"Left_Right_ML_core_50"] = subtype_vector
+subtype_vector = rep("NR-like", ncol(expr))
+#subtype_vector[1:(which(index == "GSM2601460"))] = "left" #GSM2601412
+subtype_vector[1:(which(index == "AS_222824_LR_34436"))] = "RP-like" #GSM2601412
+meta_data$Left_Right =rep("",nrow(meta_data))
+matcher = match(index, meta_data$Sample)
+meta_data[matcher,"Response"] = subtype_vector
+
+meta_info$Left_Right = rep("",nrow(meta_info))
+meta_info[meta_data$Sample,"Left_Right"] = meta_data$Left_Right
 
 ## Figure 1
 
-###
+expr[1:5,1:5]
+expr = expr[,colnames(expr) != "GSM2601431"]
+expr = expr[,meta_data[colnames(expr),"ABC_GCB"] != "Unclassified"]
+correlation_matrix = cor((expr));
+pcr = prcomp(t(correlation_matrix))
 
-p = ggbiplot::ggbiplot(
-  pcr,
-  groups = meta_data$bgal_binary,
-  var.axes = F,
-  ellipse = TRUE,
-  labels = meta_data$Name
+source("~/SeneSys/Scripts/Visualization_colors.R")
+p = pheatmap::pheatmap(
+  #scale(t(expr)),
+  correlation_matrix,
+  #fe_es,
+  #annotation_col = meta_data[,c("Drug_Treatment","B_cell_state")],
+  annotation_col = meta_data[,c("TIS_cluster","Cell_state","TIS.down","TIS.up")],
+  annotation_colors = aka3,
+  show_rownames = FALSE,
+  show_colnames = FALSE,
+  treeheight_col = 0,
+  treeheight_row = 0,
+  legend = F,
+  cluster_rows = T,
+  cluster_cols = T,
+  fontsize_col = 7,
+  clustering_method = "average"
 )
-p = p + geom_point(aes(colour=meta_data$bgal_binary), size = 4)
-p = p + scale_color_manual(values = c("darkgreen","orange"))
+
+#svg(filename = "~/Downloads/Chapuy_2.svg", width = 10, height = 10)
 p
+dev.off()
+
+index = p$tree_col$labels[ p$tree_col$order]
+subtype_vector = rep("TIS down", ncol(expr))
+subtype_vector[1:(which(index == "GSM2601460"))] = "TIS mixed" #GSM2601412
+subtype_vector[1:(which(index == "GSM2601350"))] = "TIS up" #GSM2601412
+meta_data$TIS_status =rep("",nrow(meta_data))
+matcher = match(index, meta_data$Sample)
+meta_data[matcher,"TIS_cluster"] = subtype_vector
+
+meta_info$TIS_status = rep("",nrow(meta_info))
+meta_info[meta_data$Sample,"TIS_cluster"] = meta_data$TIS_status
+
+## Figure A
+
+meta_data = meta_info[colnames(expr_raw),]
+vis_mat = meta_data[,c("ADR_IC50","Drug_Treatment","Sa_Bgal","ADR")]
+vis_mat_filt = vis_mat[,c("Drug_Treatment","ADR")] %>% reshape2::melt()
+vis_mat_filt$Drug_Treatment = factor(vis_mat_filt$Drug_Treatment, levels = c("RES","RP","NR"))
+
+p_value_plot = ggplot(vis_mat_filt, aes( x = Drug_Treatment, y = value, fill = Drug_Treatment) )
+p_value_plot = p_value_plot + geom_boxplot(notch = TRUE,outlier.colour = "red", outlier.shape = 1)
+p_value_plot = p_value_plot + scale_fill_manual(values = c("red","#EBEB29","darkgreen"))
+
+#svg(filename = "~/Downloads/Deco_mice.svg", width = 10, height = 10)
+p_value_plot
+dev.off()
+
+## Figure 2 schmitz
+
+matcher = match(colnames(expr_raw), meta_info$Sample, nomatch = 0)
+vis_mat = meta_info[matcher,]
+
+meta_data = meta_info[colnames(expr_raw),]
+vis_mat = meta_data[,c("ADR","ADROHT","PS","Progression")]
+vis_mat_filt = vis_mat %>% reshape2::melt()
+#vis_mat_filt$Drug_Treatment = factor(vis_mat_filt$Drug_Treatment, levels = c("RES","RP","NR"))
+colnames(vis_mat_filt) = c("Progression","Cell_type","Value")
+vis_mat_filt$Value = log(vis_mat_filt$Value+1)
+
+p_value_plot = ggplot(vis_mat_filt, aes( x = Progression, y = Value, fill = Cell_type) )
+p_value_plot = p_value_plot + geom_boxplot()
+p_value_plot = p_value_plot + scale_fill_manual(values = c("red","#EBEB29","darkgreen"))
+
+table(vis_mat$Progression[vis_mat$ADROHT == 0])
+
+#svg(filename = "~/Downloads/Deco_mice.svg", width = 10, height = 10)
+p_value_plot
+dev.off()
+
+
+res_val = vis_mat_filt[vis_mat_filt$Drug_Treatment == "RES","value"]
+RP_val = vis_mat_filt[vis_mat_filt$Drug_Treatment == "RP","value"]
+
+t.test(res_val,RP_val)
 
 # umap
 
@@ -164,12 +245,13 @@ umap_p = ggplot(
   aes(x, y))
 #umap_p = umap_p + geom_point( size =4, aes(color=meta_data$adr_binary) )#+geom_text(aes(label=meta_data$Sample),hjust=0, vjust=0)
 #umap_p = umap_p + geom_point( size =4, aes(color=meta_data$bgal_binary) )#+geom_text(aes(label=meta_data$Sample),hjust=0, vjust=0)
-umap_p = umap_p + geom_point( size =4, aes(color=meta_data$Drug_Treatment) )#+geom_text(aes(label=meta_data$Sample),hjust=0, vjust=0)
+umap_p = umap_p + geom_point( size =4, aes(color=meta_data_plot$ABC_GCB) )#+geom_text(aes(label=meta_data$Sample),hjust=0, vjust=0)
 umap_p = umap_p +  xlab("") + ylab("") 
 #umap_p = umap_p + stat_ellipse( linetype = 1, aes( color = meta_data$bgal_binary), level=.5, type ="t", size=1.5)
-umap_p = umap_p + stat_ellipse( linetype = 1, aes( color = meta_data$Drug_Treatment), level=.5, type ="t", size=1.5)
+umap_p = umap_p + stat_ellipse( linetype = 1, aes( color = meta_data_plot$ABC_GCB), level=.5, type ="t", size=1.5)
 #umap_p = umap_p + scale_color_manual( values = c("darkgreen","orange"),name="Drug_treatment") ##33ACFF ##FF4C33
-umap_p
+umap_p = umap_p + scale_colour_manual(values = c("darkgreen","brown"))
+umap_p  + theme(legend.position = "none")
 #genes_of_interest_hgnc_t$V1[i]
 #custom.config$random_state
 
@@ -203,3 +285,41 @@ subvector = meta_data$Cluster
 subvector[subvector %in% c(1,2,3)] = "123"
 subvector[subvector %in% c(0,4,5)] = "045"
 table(meta_data$PS_binary,meta_data$ABC_GCB)
+
+props = props[meta_data$Sample,]
+meta_data$p_value= p_value = props$P_value
+meta_data$p_value[p_value < 0.05] = "Significant"
+meta_data$p_value[meta_data$p_value != "Significant"] = "Not significant"
+table(meta_data$PS == 0,meta_data$Progression)
+vec = meta_data$Progression
+vec[meta_data$Progression == "Progression"] = 1
+vec[vec != 1] = 0
+
+library(ROCR)
+df <- data.frame(cbind(props$P_value,vec))
+pred <- prediction(as.double(df$V1), as.integer(df$vec))
+perf <- performance(pred,"tpr","fpr")
+plot(perf,colorize=TRUE)
+
+####
+
+expr_vis = expr
+expr_vis$Drug_Treatment = meta_data$Drug_Treatment
+vis_mat = reshape2::melt(expr_vis)
+colnames(vis_mat) = c("Drug_Treatment","Characteristic","Value")
+vis_mat_export = vis_mat %>% group_by(Drug_Treatment,Characteristic ) %>% dplyr::summarise("Mean_value" = mean(Value))
+
+ggplot(vis_mat_export, aes(x = Characteristic, y = Mean_value, fill = Drug_Treatment)) + geom_bar(stat="identity", position=position_dodge())
+
+###
+
+selection = c("S01","S02","S03","S04","S05")
+indeces = as.integer(apply(meta_data[,selection], FUN = function(vec){return(which.max(vec))}, MARGIN = 1))
+meta_data$Cell_state = selection[indeces]
+#meta_info[meta_data$Sample,"Cell_state"]
+
+#table(meta_data$Cell_state,meta_data$TIS_cluster)
+table(meta_data$Cell_state,meta_data$Response)
+table(meta_data$Cell_state,meta_data$TIS.down)
+table(meta_data$Cell_state,meta_data$TIS.up)
+

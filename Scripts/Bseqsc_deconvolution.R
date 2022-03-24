@@ -15,7 +15,9 @@ colnames(meta_info) = str_replace(colnames(meta_info),pattern = "\\.","_")
 
 #
 
-i_filename = "~/SeneSys/Data/Data_9461.Counts.HGNC.tsv"
+#i_filename = "~/SeneSys/Data/Data_9461.Counts.HGNC.tsv"
+#i_filename = "~/SeneSys/Data/GSE98588_new.HGNC.tsv"
+i_filename = "~/SeneSys/Data/Schmitz.HGNC.tsv"
 expr_raw = read.table(i_filename,sep="\t", stringsAsFactors =  F, header = T, row.names = 1,as.is = F)
 
 colnames(expr_raw) = str_replace(colnames(expr_raw), pattern = "^X", "")
@@ -61,7 +63,7 @@ meta_data$PS_binary = PS
 
 meta_info[meta_data$Sample,c("ADR_binary","ADROHT_binary","PS_binary")] = meta_data[,c("ADR_binary","ADROHT_binary","PS_binary")]
 
-write.table(meta_info,"~/SeneSys/Misc/Meta_information.tsv",sep = "\t",row.names = FALSE,quote =FALSE)
+#write.table(meta_info,"~/SeneSys/Misc/Meta_information.tsv",sep = "\t",row.names = FALSE,quote =FALSE)
 
 table(meta_data$ADROHT_binary, meta_data$Progression)
 table(meta_data$ADR_binary, meta_data$Progression)
@@ -78,3 +80,13 @@ plot(meta_data$PS, as.integer(vec))
 
 cor_mat = cor(t(props[,]))
 heatmap(cor_mat)
+
+matcher = match(colnames(expr_raw), meta_info$Sample, nomatch = 0)
+vis_mat = meta_info[matcher,]
+aggregate(vis_mat$ADR, by = list(vis_mat$Progression), FUN = mean)
+
+prog = vis_mat$PS[vis_mat$Progression == "Progression"] 
+no_prog = vis_mat$PS[vis_mat$Progression == "No Progression"] 
+t.test(prog,no_prog)
+
+table(meta_data$Progression,meta_data$PS_binary)
