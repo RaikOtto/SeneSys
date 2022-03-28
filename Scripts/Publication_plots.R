@@ -32,7 +32,7 @@ for (selector in selection){
   vector_ori = as.double(meta_data[colnames(expr_raw),selector])
   
   quantiles = as.double(quantile(vector_ori, seq(0,1,0.01)))
-  threshold = quantiles[76]
+  threshold = quantiles[51]
   vector = rep("high",length(vector_ori) )
   vector[vector_ori <= threshold] = "low"
   meta_data[,paste(selector,"binary",sep ="_")] = vector
@@ -52,7 +52,7 @@ for (selector in selection){
   vector_ori = as.double(fe_es[selector,colnames(expr_raw)])
   
   quantiles = as.double(quantile(vector_ori, seq(0,1,0.01)))
-  threshold = quantiles[67]
+  threshold = quantiles[61]
   vector = rep("High",length(vector_ori) )
   vector[vector_ori <= threshold] = "Medium_Low"
   meta_data[,selector] = vector
@@ -89,6 +89,7 @@ expr[1:5,1:5]
 expr = expr[,colnames(expr) != "GSM2601431"]
 expr = expr[,meta_data[colnames(expr),"ABC_GCB"] != "Unclassified"]
 expr = expr[,meta_data[colnames(expr),"Drug_Treatment"] != "RES"]
+#expr = expr[,!( meta_data[colnames(expr),"Pre_Post"] %in% c("Relapse")) ]
 correlation_matrix = cor((expr));
 pcr = prcomp(t(correlation_matrix))
 
@@ -97,8 +98,8 @@ p = pheatmap::pheatmap(
   #scale(t(expr)),
   correlation_matrix,
   #fe_es,
-  annotation_col = meta_data[,c("Drug_Treatment","Response","Cell_state")],
-  #annotation_col = meta_data[,c("ABC_GCB","Left_Right","Cell_state","TIS.down","TIS.up")],
+  annotation_col = meta_data[,c("Drug_Treatment","TIS_cluster","TIS.down")],
+  #annotation_col = meta_data[,c("ABC_GCB","TIS.up")],
   #annotation_col = meta_data[,c("ABC_GCB","Left_Right","TIS.down")],
   annotation_colors = aka3,
   show_rownames = FALSE,
@@ -112,17 +113,16 @@ p = pheatmap::pheatmap(
   clustering_method = "ward.D2"
 )
 
-#svg(filename = "~/Downloads/Mice_1.svg", width = 10, height = 10)
+svg(filename = "~/Downloads/Mice_1.svg", width = 10, height = 10)
 p
 dev.off()
 
 index = p$tree_col$labels[ p$tree_col$order]
-subtype_vector = rep("NR-like", ncol(expr))
-#subtype_vector[1:(which(index == "GSM2601460"))] = "left" #GSM2601412
-subtype_vector[1:(which(index == "AS_222824_LR_34436"))] = "RP-like" #GSM2601412
-meta_data$Left_Right =rep("",nrow(meta_data))
+subtype_vector = rep("TIS down", ncol(expr))
+subtype_vector[1:(which(index == "AS_222824_LR_34436"))] = "TIS up" #GSM2601412 #s566  #AS_22222824_LR_34436
+subtype_vector[1:(which(index == "GSM2601468"))] = "TIS up" #GSM2601468 #s365
 matcher = match(index, meta_data$Sample)
-meta_data[matcher,"Response"] = subtype_vector
+meta_data[matcher,"TIS_cluster"] = subtype_vector
 
 meta_info$Left_Right = rep("",nrow(meta_info))
 meta_info[meta_data$Sample,"Left_Right"] = meta_data$Left_Right
@@ -140,8 +140,8 @@ p = pheatmap::pheatmap(
   #scale(t(expr)),
   correlation_matrix,
   #fe_es,
-  #annotation_col = meta_data[,c("Drug_Treatment","B_cell_state")],
-  annotation_col = meta_data[,c("TIS_cluster","Cell_state","TIS.down","TIS.up")],
+  annotation_col = meta_data[c("Drug_Treatment")],
+  #annotation_col = meta_data[,c("TIS_cluster","Cell_state","TIS.down","TIS.up")],
   annotation_colors = aka3,
   show_rownames = FALSE,
   show_colnames = FALSE,
@@ -151,7 +151,7 @@ p = pheatmap::pheatmap(
   cluster_rows = T,
   cluster_cols = T,
   fontsize_col = 7,
-  clustering_method = "average"
+  clustering_method = "complete"
 )
 
 #svg(filename = "~/Downloads/Chapuy_2.svg", width = 10, height = 10)
@@ -160,7 +160,7 @@ dev.off()
 
 index = p$tree_col$labels[ p$tree_col$order]
 subtype_vector = rep("TIS down", ncol(expr))
-subtype_vector[1:(which(index == "GSM2601460"))] = "TIS mixed" #GSM2601412
+subtype_vector[1:(which(index == "GSM2601460"))] = "TIS mixed" #GSM2601412 
 subtype_vector[1:(which(index == "GSM2601350"))] = "TIS up" #GSM2601412
 meta_data$TIS_status =rep("",nrow(meta_data))
 matcher = match(index, meta_data$Sample)
@@ -226,13 +226,13 @@ sad_genes = sad_genes[sad_genes != ""]
 sad_genes = sad_genes[]
 expr = expr_raw[match(sad_genes,  rownames(expr_raw), nomatch = 0),]
 expr = expr[,meta_data$ABC_GCB != "Unclassified"]
-meta_data_plot = meta_info[colnames(expr),]
+meta_data_plot = meta_data[colnames(expr),]
 #expr[1:5,1:5]
 correlation_matrix = cor(expr);pcr = prcomp(t(correlation_matrix))
 
 umap_result = umap::umap(
   correlation_matrix,
-  colvec = meta_data$Drug_Treatment,
+  colvec = meta_data_plot$TIS.up,
   preserve.seed = TRUE,
   config=custom.config
 )
@@ -245,10 +245,10 @@ umap_p = ggplot(
   aes(x, y))
 #umap_p = umap_p + geom_point( size =4, aes(color=meta_data$adr_binary) )#+geom_text(aes(label=meta_data$Sample),hjust=0, vjust=0)
 #umap_p = umap_p + geom_point( size =4, aes(color=meta_data$bgal_binary) )#+geom_text(aes(label=meta_data$Sample),hjust=0, vjust=0)
-umap_p = umap_p + geom_point( size =4, aes(color=meta_data_plot$ABC_GCB) )#+geom_text(aes(label=meta_data$Sample),hjust=0, vjust=0)
+umap_p = umap_p + geom_point( size =4, aes(color=meta_data_plot$TIS.up) )#+geom_text(aes(label=meta_data$Sample),hjust=0, vjust=0)
 umap_p = umap_p +  xlab("") + ylab("") 
 #umap_p = umap_p + stat_ellipse( linetype = 1, aes( color = meta_data$bgal_binary), level=.5, type ="t", size=1.5)
-umap_p = umap_p + stat_ellipse( linetype = 1, aes( color = meta_data_plot$ABC_GCB), level=.5, type ="t", size=1.5)
+umap_p = umap_p + stat_ellipse( linetype = 1, aes( color = meta_data_plot$TIS.up), level=.5, type ="t", size=1.5)
 #umap_p = umap_p + scale_color_manual( values = c("darkgreen","orange"),name="Drug_treatment") ##33ACFF ##FF4C33
 umap_p = umap_p + scale_colour_manual(values = c("darkgreen","brown"))
 umap_p  + theme(legend.position = "none")
@@ -318,8 +318,36 @@ indeces = as.integer(apply(meta_data[,selection], FUN = function(vec){return(whi
 meta_data$Cell_state = selection[indeces]
 #meta_info[meta_data$Sample,"Cell_state"]
 
-#table(meta_data$Cell_state,meta_data$TIS_cluster)
-table(meta_data$Cell_state,meta_data$Response)
+table(meta_data$Cell_state,meta_data$TIS_cluster)
+table(meta_data$Cell_state,meta_data$Drug_Treatment)
 table(meta_data$Cell_state,meta_data$TIS.down)
 table(meta_data$Cell_state,meta_data$TIS.up)
+table(meta_data$Progression,meta_data$Cell_state)
+
+dd = meta_data[meta_data$TIS_cluster %in% c("TIS up", "TIS down"),]
+table(dd$Cell_state,dd$TIS.down)
+table(dd$Cell_state,dd$TIS.up)
+table(dd$Cell_state,dd$TIS_cluster)
+
+dd = meta_data
+dd[dd$Cell_state %in% c("S01","S04","S05"),"Cell_state"] = "1_4_5"
+dd[dd$Cell_state %in% c("S02","S03"),"Cell_state"] = "2_3"
+dd$Cell_state = factor(dd$Cell_state, levels = c("1_4_5","2_3"))
+
+#vis_data = as.data.frame(rbind( cbind("TIS down",table(dd$Cell_state,dd$TIS.down)), cbind("TIS up",table(dd$Cell_state,dd$TIS.up))))
+vis_data = reshape2::melt(table(dd[,c("TIS.down","TIS_cluster")]))
+#vis_data = reshape2::melt(table(dd[,c("TIS.down","Cell_state")]))
+colnames(vis_data)= c("TIS.down","TIS_cluster","Count")
+vis_data[vis_data$TIS.down == "Medium_Low","Count"] = vis_data[vis_data$TIS.down == "Medium_Low","Count"] * -1
+vis_data$Cell_state = factor(vis_data$Cell_state, levels = rev(unique(vis_data$Cell_state)))
+
+p = ggplot( data = vis_data,aes(x = TIS.down, fill = TIS_cluster, y = Count))
+p = p + geom_bar(stat="identity", position=position_dodge())
+p = p + scale_fill_manual(values = c("red","blue"))
+#p = p + scale_fill_manual(values = c("#9D33FF","#ee9f53","#b01511","blue","red"))
+p = p + coord_flip()
+
+svg(filename = "~/Downloads/Chapuy_TIS.down.svg", width = 10, height = 10)
+p
+dev.off()
 
