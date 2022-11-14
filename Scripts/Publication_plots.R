@@ -31,55 +31,55 @@ selection_vec = which(meta_data$Doro_annot != "")
 expr_raw = expr_raw[,selection_vec]
 dim(expr_raw)
 
-selection = c("ADR","ADROHT","PS")
+#selection = c("ADR","ADROHT","PS")
 
-for (selector in selection){
+#for (selector in selection){
   
-  vector_ori = as.double(meta_data[colnames(expr_raw),selector])
+#  vector_ori = as.double(meta_data[colnames(expr_raw),selector])
   
-  quantiles = as.double(quantile(vector_ori, seq(0,1,0.01)))
-  threshold = quantiles[51]
-  vector = rep("high",length(vector_ori) )
-  vector[vector_ori <= threshold] = "low"
-  meta_data[,paste(selector,"binary",sep ="_")] = vector
-}
+#  quantiles = as.double(quantile(vector_ori, seq(0,1,0.01)))
+#  threshold = quantiles[51]
+#  vector = rep("high",length(vector_ori) )
+#  vector[vector_ori <= threshold] = "low"
+#  meta_data[,paste(selector,"binary",sep ="_")] = vector
+#}
 
 #expr_raw = expr_raw[,meta_data$Drug_Treatment %in% c("NR","RP")]
 #meta_data = meta_info[colnames(expr_raw),]
 
 #fe_es = read.table("~/SeneSys/Results/Schmitz.GSVA.tsv",sep ="\t", header = T,as.is = T,row.names = 1)
 #fe_es = read.table("~/SeneSys/Results/Data_9461.GSVA.tsv",sep ="\t", header = T,as.is = T,row.names = 1)
-fe_es = read.table("~/SeneSys/Results/GSE98588.new.HGNC.GSVA.tsv",sep ="\t", header = T,as.is = T,row.names = 1)
+#fe_es = read.table("~/SeneSys/Results/GSE98588.new.HGNC.GSVA.tsv",sep ="\t", header = T,as.is = T,row.names = 1)
 #fe_es = read.table("~/SeneSys/Results/Reddy.GSVA.tsv",sep ="\t", header = T,as.is = T,row.names = 1)
-rownames(fe_es) = make.names(rownames(fe_es))
-colnames(fe_es ) = str_replace_all(colnames(fe_es ), "X","")
+#rownames(fe_es) = make.names(rownames(fe_es))
+#colnames(fe_es ) = str_replace_all(colnames(fe_es ), "X","")
 
-selection = c("ML_core","TIS.up","TIS.down")
-for (selector in selection){
+#selection = c("ML_core","TIS.up","TIS.down")
+#for (selector in selection){
   
-  vector_ori = as.double(fe_es[selector,colnames(expr_raw)])
+#  vector_ori = as.double(fe_es[selector,colnames(expr_raw)])
   
-  quantiles = as.double(quantile(vector_ori, seq(0,1,0.01)))
-  threshold = quantiles[67]
-  vector = rep("High",length(vector_ori) )
-  vector[vector_ori <= threshold] = "Medium_Low"
-  meta_data[,selector] = vector
-}
+#  quantiles = as.double(quantile(vector_ori, seq(0,1,0.01)))
+#  threshold = quantiles[67]
+#  vector = rep("High",length(vector_ori) )
+#  vector[vector_ori <= threshold] = "Medium_Low"
+#  meta_data[,selector] = vector
+#}
 source("~/SeneSys/Scripts/Visualization_colors.R")
 #
-selection = c("S01","S02","S03","S04","S05")
-indeces = as.integer(apply(meta_data[,selection], FUN = function(vec){return(which.max(vec))}, MARGIN = 1))
-meta_data$Cell_state = selection[indeces]
-selection = c("L1","L2","L3","L4","L5","L6","L7","L8","L9")
-indeces = as.integer(apply(meta_data[,selection], FUN = function(vec){return(which.max(vec))}, MARGIN = 1))
-meta_data$Ecotype = selection[indeces]
+#selection = c("S01","S02","S03","S04","S05")
+#indeces = as.integer(apply(meta_data[,selection], FUN = function(vec){return(which.max(vec))}, MARGIN = 1))
+#meta_data$Cell_state = selection[indeces]
+#selection = c("L1","L2","L3","L4","L5","L6","L7","L8","L9")
+#indeces = as.integer(apply(meta_data[,selection], FUN = function(vec){return(which.max(vec))}, MARGIN = 1))
+#meta_data$Ecotype = selection[indeces]
 
-genes_of_interest_hgnc_t = read.table("~/SeneSys/Misc/SeneSys_gene_sets.gmt.tsv",sep ="\t", stringsAsFactors = F, header = F)
+#genes_of_interest_hgnc_t = read.table("~/SeneSys/Misc/SeneSys_gene_sets.gmt.tsv",sep ="\t", stringsAsFactors = F, header = F)
 genes_of_interest_hgnc_t = read.table("~/SeneSys/Misc/SAS_TF.gmt.tsv",sep ="\t", stringsAsFactors = F, header = F)
 
 genes_of_interest_hgnc_t$V1
 
-i = 59
+i = 38
 genes_of_interest_hgnc_t$V1[i]
 sad_genes = genes_of_interest_hgnc_t[i,3:ncol(genes_of_interest_hgnc_t)] 
 #sad_genes = c(genes_of_interest_hgnc_t[6,3:ncol(genes_of_interest_hgnc_t)] ,genes_of_interest_hgnc_t[7,3:ncol(genes_of_interest_hgnc_t)] )
@@ -91,18 +91,19 @@ expr = expr_raw[match(sad_genes,  rownames(expr_raw), nomatch = 0),]
 
 rownames(meta_data) = meta_data$Sample
 expr[1:5,1:5]
-#expr = expr[,colnames(expr) != "GSM2601431"]
+expr = expr
 #expr = expr[,meta_data[colnames(expr),"ABC_GCB"] != "Unclassified"]
 source("~/SeneSys/Scripts/Visualization_colors.R")
+
 p = pheatmap::pheatmap(
-  #scale(t(expr)),
-  correlation_matrix,
+  t(expr),
+  #correlation_matrix,
   #fe_es,
-  annotation_col = meta_data[,c("Doro_annot","OS","SUVARNESS","ABC_GCB")],
+  #annotation_col = meta_data[,c("Doro_annot","Response_to.initial.therapy","CNS_Relapse","CNS_Involvement")],
   #annotation_col = meta_data[,c("ABC_GCB","TIS.up")],
   #annotation_col = meta_data[,c("ABC_GCB","Left_Right","TIS.down")],
   annotation_colors = aka3,
-  show_rownames = FALSE,
+  show_rownames = TRUE,
   show_colnames = FALSE,
   #treeheight_col = 0,
   treeheight_row = 0,
@@ -296,3 +297,13 @@ ggbiplot::ggbiplot(
     labels = meta_data$Name[meta_data$Drug_Treatment == "RES"]
 )  + scale_color_manual(name="Drug response", values=c("black"))
 #dev.off()
+
+###
+
+table(meta_data[,c("Doro_annot","CNS_Involvement")])
+table(meta_data[,c("Doro_annot","CNS_Relapse")])
+table(meta_data[,c("Doro_annot","CNS_Relapse","CNS_Involvement")])
+table(meta_data[,c("Doro_annot","Response_to.initial.therapy")])
+
+
+meta_data[,c("Doro_annot","Response_to.initial.therapy","CNS_Relapse","CNS_Involvement")]
