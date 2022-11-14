@@ -16,13 +16,8 @@ colnames(meta_info) = str_replace(colnames(meta_info),pattern = "\\.","_")
 #path_transcriptome_file = "~/SeneSys/Data/Schmitz.HGNC.DESeq2.tsv"
 #path_transcriptome_file = "~/SeneSys/Data/Schmitz.clean.tsv"
 #path_transcriptome_file = "~/SeneSys/Data/GSE98588.DESeq2.tsv"
-<<<<<<< HEAD
 #path_transcriptome_file = "~/SeneSys/Data/GSE98588_new.HGNC.tsv"
 path_transcriptome_file = "~/SeneSys/Data/Reddy_hgnc_S255.tsv"
-=======
-path_transcriptome_file = "~/SeneSys/Data/GSE98588_new.HGNC.tsv"
-#path_transcriptome_file = "~/SeneSys/Data/Reddy_hgnc.new.tsv"
->>>>>>> 2694039f9b9c34bdbd5c6c9026c5c5a970f7bc1b
 
 expr_raw = read.table(path_transcriptome_file,sep="\t", stringsAsFactors = F, header = T, as.is = TRUE,row.names = 1, dec= ".")
 colnames(expr_raw) = str_replace(colnames(expr_raw), pattern = "^X", "")
@@ -93,31 +88,11 @@ sad_genes = sad_genes[sad_genes != ""]
 
 table(sad_genes %in% rownames(expr_raw))
 expr = expr_raw[match(sad_genes,  rownames(expr_raw), nomatch = 0),]
-<<<<<<< HEAD
 
 rownames(meta_data) = meta_data$Sample
 expr[1:5,1:5]
 #expr = expr[,colnames(expr) != "GSM2601431"]
 #expr = expr[,meta_data[colnames(expr),"ABC_GCB"] != "Unclassified"]
-=======
-#meta_data = meta_info[colnames(expr),]
-#meta_data$bgal_binary[meta_data$bgal_binary == ""] = "Unknown"
-#meta_data$Lymphoma_Ecotype[meta_data$Lymphoma_Ecotype == ""] = "Unknown"
-#meta_data$B_cell_state[meta_data$B_cell_state == ""] = "Unknown"
-
-rownames(meta_data) = meta_data$Sample
-#rownames(expr) = meta_data$Name
-#expr = meta_data[,c("S01","S02","S03","S04","S05","L1","L2","L3","L4","L5","L6","L7","L8","L9")]
-#expr = meta_data[,c("S01","S02","S03","S04","S05")]
-expr[1:5,1:5]
-expr = expr[,colnames(expr) != "GSM2601431"]
-expr = expr[rownames(expr) != "GSM2601431",]
-#expr = expr[ ,meta_data$Sample[meta_data$Drug_Treatment == "RES"]]
->>>>>>> 2694039f9b9c34bdbd5c6c9026c5c5a970f7bc1b
-#expr = expr[,meta_data[colnames(expr),"Drug_Treatment"] != "RES"]
-#expr = expr[,!( meta_data[colnames(expr),"Pre_Post"] %in% c("Relapse")) ]
-
-<<<<<<< HEAD
 source("~/SeneSys/Scripts/Visualization_colors.R")
 p = pheatmap::pheatmap(
   #scale(t(expr)),
@@ -137,10 +112,6 @@ p = pheatmap::pheatmap(
   fontsize_col = 7,
   clustering_method = "ward.D2"
 )
-=======
-var_vec = as.double(apply(expr, MARGIN = 1, FUN = var))
-expr = expr[var_vec > 0.5,]
->>>>>>> 2694039f9b9c34bdbd5c6c9026c5c5a970f7bc1b
 
 correlation_matrix = cor(t(expr))
 correlation_matrix = expr
