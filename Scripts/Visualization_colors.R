@@ -37,7 +37,7 @@ aka3 = list(
     ADROHT_binary = c("high" = "black", "low" = "white"),
     PS_binary = c("high" = "black", "low" = "white","unknown" = "gray"),
     B_cell_state = c(S01 = "#76a1ca", S02 = "#562665", S03 = "#08f9cb", S04 = "#a91b73", S05 = "#79db30", "Unknown"= "Gray"),
-    Lymphoma_Ecotype = c("LE3" = "#3c3dad", "LE6" = "#b01511", "LE7" = "#ee9f53", "Unknown" = "gray"),
+    Ecotype = c("L1" = "#DC7633","L2"="#CD5C5C","L3" = "#3c3dad", "L4" = "blue", "L5"="#DE3163", "L6" = "#b01511", "L7" = "#ee9f53", "L8" = "red", "L9" = "#9FE2BF"),
     Cell_state = c("S01" = "red", "S02" = "blue","S03" = "#b01511","S04" = "#ee9f53", "S05" = "#9D33FF"),
     TIS_cluster = c("TIS down" = "red","TIS mixed" = "yellow","TIS up" = "blue"),
     Response = c("RP-like" = "blue", "NR-like" = "red")
