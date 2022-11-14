@@ -6,6 +6,7 @@ aka3 = list(
         Gastric_NEN = "purple",
         Liver = "Darkgreen",
         CUP = "pink"),
+    Doro_annot = c("RP_others" = "white","RP_Sens" = "black"),
     Deco_type = c(alpha = "Blue",beta = "Yellow",gamma = "Orange",delta = "Purple", e13.5 = "Brown", hsc = "white"),
     ABC_GCB = c(ABC= "darkgreen", GCB = "darkred", Unclassified = "white","PMBL"= "gray"),
     Left_Right = c("left"= "blue", "right" = "red"),

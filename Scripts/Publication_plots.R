@@ -11,12 +11,13 @@ rownames(meta_info) = meta_info$Sample
 colnames(meta_info) = str_replace(colnames(meta_info),pattern = "\\.","_")
 
 #path_transcriptome_file = "~/Dropbox/testproject/SABGal_exp.csv"
-path_transcriptome_file = "~/SeneSys/Data/Data_9461.Counts.DeSeq2.HGNC.tsv"
+#path_transcriptome_file = "~/SeneSys/Data/Data_9461.Counts.DeSeq2.HGNC.tsv"
 #path_transcriptome_file = "~/SeneSys/Data/Data_9461.Counts.HGNC.tsv"
 #path_transcriptome_file = "~/SeneSys/Data/Schmitz.HGNC.DESeq2.tsv"
 #path_transcriptome_file = "~/SeneSys/Data/Schmitz.HGNC.tsv"
 #path_transcriptome_file = "~/SeneSys/Data/GSE98588.DESeq2.tsv"
 #path_transcriptome_file = "~/SeneSys/Data/GSE98588_new.HGNC.tsv"
+path_transcriptome_file = "~/SeneSys/Data/Reddy_hgnc_S255.tsv"
 
 expr_raw = read.table(path_transcriptome_file,sep="\t", stringsAsFactors =  F, header = T, as.is = F,row.names = 1)
 colnames(expr_raw) = str_replace(colnames(expr_raw), pattern = "^X", "")
@@ -24,6 +25,10 @@ expr_raw[1:5,1:5]
 
 table(colnames(expr_raw) %in% meta_info$Sample)
 meta_data = meta_info[colnames(expr_raw),]
+
+selection_vec = which(meta_data$Doro_annot != "")
+expr_raw = expr_raw[,selection_vec]
+dim(expr_raw)
 
 selection = c("ADR","ADROHT","PS")
 
@@ -64,6 +69,7 @@ indeces = as.integer(apply(meta_data[,selection], FUN = function(vec){return(whi
 meta_data$Cell_state = selection[indeces]
 
 genes_of_interest_hgnc_t = read.table("~/SeneSys/Misc/SeneSys_gene_sets.gmt.tsv",sep ="\t", stringsAsFactors = F, header = F)
+genes_of_interest_hgnc_t = read.table("~/SeneSys/Misc/SAS_TF.gmt.tsv",sep ="\t", stringsAsFactors = F, header = F)
 
 genes_of_interest_hgnc_t$V1
 
@@ -76,19 +82,12 @@ sad_genes = sad_genes[sad_genes != ""]
 
 table(sad_genes %in% rownames(expr_raw))
 expr = expr_raw[match(sad_genes,  rownames(expr_raw), nomatch = 0),]
-#expr_selection = c("LE1","LE2","LE3","LE4","LE5","LE6","LE7","LE8","LE9","S01","S02","S03","S04","S05")
-#expr = meta_data[,expr_selection]
-#meta_data = meta_info[colnames(expr),]
-#meta_data$bgal_binary[meta_data$bgal_binary == ""] = "Unknown"
-#meta_data$Lymphoma_Ecotype[meta_data$Lymphoma_Ecotype == ""] = "Unknown"
-#meta_data$B_cell_state[meta_data$B_cell_state == ""] = "Unknown"
 
 rownames(meta_data) = meta_data$Sample
-#rownames(expr) = meta_data$Name
 expr[1:5,1:5]
-expr = expr[,colnames(expr) != "GSM2601431"]
-expr = expr[,meta_data[colnames(expr),"ABC_GCB"] != "Unclassified"]
-expr = expr[,meta_data[colnames(expr),"Drug_Treatment"] != "RES"]
+#expr = expr[,colnames(expr) != "GSM2601431"]
+#expr = expr[,meta_data[colnames(expr),"ABC_GCB"] != "Unclassified"]
+#expr = expr[,meta_data[colnames(expr),"Drug_Treatment"] != "RES"]
 #expr = expr[,!( meta_data[colnames(expr),"Pre_Post"] %in% c("Relapse")) ]
 correlation_matrix = cor((expr));
 pcr = prcomp(t(correlation_matrix))
@@ -98,7 +97,7 @@ p = pheatmap::pheatmap(
   #scale(t(expr)),
   correlation_matrix,
   #fe_es,
-  annotation_col = meta_data[,c("Drug_Treatment","TIS_cluster","TIS.down")],
+  annotation_col = meta_data[,c("Doro_annot","OS","SUVARNESS","ABC_GCB")],
   #annotation_col = meta_data[,c("ABC_GCB","TIS.up")],
   #annotation_col = meta_data[,c("ABC_GCB","Left_Right","TIS.down")],
   annotation_colors = aka3,
